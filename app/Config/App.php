@@ -16,7 +16,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'http://localhost/kanbam/public/';
 
     /**
      * --------------------------------------------------------------------------
@@ -25,7 +25,7 @@ class App extends BaseConfig
      *
      * A versão atual da aplicação, usada para exibição e controle.
      */
-    public string $version = '1.0.1';
+    public string $version = '1.0.2';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

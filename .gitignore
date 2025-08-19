@@ -2,7 +2,7 @@
 .env
 
 # Arquivo de configuração do banco de dados (contém senhas)
-/app/Config/Database.php
+# /app/Config/Database.php
 
 # Pasta do Composer
 /vendor/
