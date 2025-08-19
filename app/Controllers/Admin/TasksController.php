@@ -24,6 +24,11 @@ class TasksController extends BaseController
             $data['due_date'] = null;
         }
 
+        // Garante que um user_id vazio seja salvo como NULL para evitar erro de chave estrangeira.
+        if (array_key_exists('user_id', $data) && empty($data['user_id'])) {
+            $data['user_id'] = null;
+        }
+
         if ($taskModel->save($data)) {
             return redirect()->to('/admin/projects/' . $projectId)
                              ->with('success', 'Tarefa criada com sucesso.')
