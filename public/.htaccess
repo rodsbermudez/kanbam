@@ -1,0 +1,26 @@
+#
+# CodeIgniter4 - Apache HTTP Server configuration
+#
+# For the built-in server, this file is not needed.
+# See https://codeigniter.com/user_guide/installation/running.html
+#
+
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks
+    RewriteEngine On
+
+    # If you want to force HTTPS, uncomment the following lines
+    # and replace "example.com" with your domain name.
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://example.com/$1 [L,R=301]
+
+    # Add a trailing slash to directories
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^(.*[^/])$ /$1/ [L,R=301]
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_URI} !^/index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [L]
+</IfModule>
