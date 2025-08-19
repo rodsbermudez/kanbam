@@ -207,15 +207,50 @@ class ProjectsController extends BaseController
     }
 
     /**
-     * Deleta (soft delete) um projeto.
+     * Deleta (soft delete) um projeto e todos os seus dados associados (tarefas, notas, membros).
+     * A operação é executada dentro de uma transação para garantir a integridade dos dados.
      */
     public function delete($id)
     {
         $projectModel = new ProjectModel();
-        if ($projectModel->delete($id)) {
-            return redirect()->to('/admin/projects')->with('success', 'Projeto removido com sucesso.');
+        $taskModel = new TaskModel();
+        $noteModel = new TaskNoteModel();
+        $projectUserModel = new ProjectUserModel();
+        $db = \Config\Database::connect();
+
+        // Inicia a transação
+        $db->transStart();
+
+        // 1. Encontra as tarefas do projeto
+        $tasks = $taskModel->where('project_id', $id)->findAll();
+        
+        if (!empty($tasks)) {
+            $taskIds = array_column($tasks, 'id');
+
+            // 2. Remove as notas associadas às tarefas (hard delete)
+            if (!empty($taskIds)) {
+                $noteModel->whereIn('task_id', $taskIds)->delete();
+            }
+
+            // 3. Remove (soft delete) as tarefas
+            $taskModel->whereIn('id', $taskIds)->delete();
         }
-        return redirect()->to('/admin/projects')->with('error', 'Erro ao remover o projeto.');
+
+        // 4. Remove os membros associados ao projeto (hard delete)
+        $projectUserModel->where('project_id', $id)->delete();
+
+        // 5. Remove (soft delete) o projeto
+        $projectModel->delete($id);
+
+        // Finaliza a transação
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            // Se a transação falhou
+            return redirect()->to('/admin/projects')->with('error', 'Erro ao remover o projeto e seus dados.');
+        }
+
+        return redirect()->to('/admin/projects')->with('success', 'Projeto e todos os seus dados foram removidos com sucesso.');
     }
 
     /**
