@@ -41,7 +41,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
 
         // Gerenciamento de Tarefas
-        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1');
+        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1'); // Rota reativada para o modal específico do projeto
+        $routes->post('tasks/create', 'Admin\TasksController::create'); // Nova rota global
         $routes->post('projects/(:num)/tasks/save-ai', 'Admin\TasksController::saveAIGeneratedTasks/$1');
         $routes->post('projects/(:num)/tasks/generate-ai', 'Admin\TasksController::generateWithAI/$1');
         $routes->post('tasks/update-board', 'Admin\TasksController::updateBoard');
@@ -58,6 +59,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         // Rotas para ações em massa
         $routes->post('tasks/bulk-update', 'Admin\TasksController::bulkUpdate');
         $routes->post('tasks/bulk-delete', 'Admin\TasksController::bulkDelete');
+
+        // Rota para AJAX (buscar membros de um projeto)
+        $routes->get('projects/(:num)/members', 'Admin\ProjectsController::getProjectMembers/$1');
     });
 
     // Gerenciamento de Documentos de Projeto (requer apenas login, não admin)

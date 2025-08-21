@@ -12,11 +12,18 @@ class TasksController extends BaseController
     /**
      * Processa a criação de uma nova tarefa.
      */
-    public function create($projectId)
+    public function create($projectId = null)
     {
         $taskModel = new TaskModel();
 
         $data = $this->request->getPost();
+
+        // Se o projectId não veio pela URL (rota específica do projeto), 
+        // pega do formulário (rota global do FAB).
+        if ($projectId === null) {
+            $projectId = $data['project_id'] ?? null;
+        }
+        // Garante que o ID do projeto esteja nos dados a serem salvos.
         $data['project_id'] = $projectId;
 
         // Garante que uma data de entrega vazia seja salva como NULL no banco de dados.

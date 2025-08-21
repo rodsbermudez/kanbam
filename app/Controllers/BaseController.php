@@ -35,13 +35,14 @@ abstract class BaseController extends Controller
      *
      * @var list<string>
      */
-    protected $helpers = [];
+    protected $helpers = ['auth', 'user'];
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
+     *
+     * @var array
      */
-    // protected $session;
+    protected $viewData = [];
 
     /**
      * @return void
@@ -53,6 +54,28 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
 
-        // E.g.: $this->session = service('session');
+        // E.g.: $this->session = \Config\Services::session();
+        $this->session = \Config\Services::session();
+
+        $this->loadGlobalData();
+        \Config\Services::renderer()->setData($this->viewData);
+    }
+
+    /**
+     * Carrega dados que precisam estar disponíveis globalmente em todas as views.
+     *
+     * @return void
+     */
+    protected function loadGlobalData()
+    {
+        if (session()->get('isLoggedIn') && session()->get('is_admin')) {
+            $projectModel = new \App\Models\ProjectModel();
+            $this->viewData['global_projects'] = $projectModel->orderBy('name', 'ASC')->findAll();
+
+            $this->viewData['global_task_statuses'] = [
+                'não iniciadas', 'em desenvovimento', 'aprovação', 'com cliente',
+                'ajustes', 'aprovada', 'implementada', 'concluída', 'cancelada',
+            ];
+        }
     }
 }

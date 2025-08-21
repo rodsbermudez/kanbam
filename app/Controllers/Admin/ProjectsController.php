@@ -303,4 +303,19 @@ class ProjectsController extends BaseController
         // Se não encontrou a associação ou a exclusão falhou (0 linhas afetadas).
         return redirect()->to('/admin/projects/' . $projectId)->with('error', 'Não foi possível desassociar o usuário.')->with('active_tab', 'members');
     }
+
+    /**
+     * Retorna os membros de um projeto em formato JSON para chamadas AJAX.
+     */
+    public function getProjectMembers($projectId)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $userModel = new UserModel();
+        $members = $userModel->getUsersForProject($projectId);
+
+        return $this->response->setJSON(['success' => true, 'members' => $members]);
+    }
 }

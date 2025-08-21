@@ -28,6 +28,7 @@
                 </div>
                 <!-- Ações de Tarefas -->
                 <div class="btn-group" role="group" aria-label="Ações de Tarefas">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="bi bi-plus-lg"></i> Nova Tarefa</button>
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-magic"></i> Gerar com IA
@@ -45,7 +46,6 @@
                             <?php endforeach; ?>
                         </ul>
                     </div>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="bi bi-plus-lg"></i> Nova Tarefa</button>
                 </div>
                 <!-- Ações do Projeto -->
                 <div class="btn-group" role="group" aria-label="Ações do Projeto">

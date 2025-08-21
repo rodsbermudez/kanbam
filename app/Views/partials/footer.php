@@ -3,6 +3,7 @@
 </footer>
 
 <?= $this->include('partials/theme_switcher') ?>
+<?= $this->include('partials/fab') ?>
 <?= $this->include('partials/due_tasks_sidebar') ?>
 <?= $this->include('partials/toasts') ?>
 
