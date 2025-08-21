@@ -25,7 +25,7 @@ class App extends BaseConfig
      *
      * A versão atual da aplicação, usada para exibição e controle.
      */
-    public string $version = '1.0.2';
+    public string $version = '1.0.4';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

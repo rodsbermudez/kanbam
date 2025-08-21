@@ -26,6 +26,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('admin/users') ?>">Usuários</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('admin/clients') ?>">Clientes</a>
+                </li>
                 <?php endif; ?>
             </ul>
             <ul class="navbar-nav">

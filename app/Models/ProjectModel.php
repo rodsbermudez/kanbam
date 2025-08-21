@@ -12,7 +12,7 @@ class ProjectModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description'];
+    protected $allowedFields    = ['name', 'description', 'client_id'];
 
     // Dates
     protected $useTimestamps = true;
@@ -26,7 +26,8 @@ class ProjectModel extends Model
      */
     public function getProjectsForUser(int $userId, ?string $search = null)
     {
-        $builder = $this->select('projects.*')
+        $builder = $this->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+                        ->join('clients', 'clients.id = projects.client_id', 'left')
                         ->join('project_users', 'project_users.project_id = projects.id')
                         ->where('project_users.user_id', $userId);
 
@@ -34,6 +35,7 @@ class ProjectModel extends Model
             $builder->groupStart()
                     ->like('projects.name', $search)
                     ->orLike('projects.description', $search)
+                    ->orLike('clients.name', $search)
                     ->groupEnd();
         }
 

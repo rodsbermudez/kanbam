@@ -82,6 +82,9 @@
         <a href="#" class="fab-menu-item" data-bs-toggle="modal" data-bs-target="#globalAddUserModal" title="Novo Usuário">
             <i class="bi bi-person-plus"></i>
         </a>
+        <a href="#" class="fab-menu-item" data-bs-toggle="modal" data-bs-target="#globalAddClientModal" title="Novo Cliente">
+            <i class="bi bi-person-badge"></i>
+        </a>
     </div>
     <button class="fab-toggler">
         <i class="bi bi-plus-lg"></i>
@@ -208,6 +211,56 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Global: Adicionar Cliente -->
+<div class="modal fade" id="globalAddClientModal" tabindex="-1" aria-labelledby="globalAddClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="globalAddClientModalLabel">Criar Novo Cliente</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= site_url('admin/clients') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-7 mb-3">
+                            <label for="global_client_name" class="form-label">Nome do Cliente <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="global_client_name" name="name" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="global_client_tag" class="form-label">Tag <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="global_client_tag" name="tag" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="global_client_color" class="form-label">Cor</label>
+                            <input type="color" class="form-control form-control-color" id="global_client_color" name="color" value="#6c757d" title="Escolha uma cor para o cliente">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="global_responsible_name" class="form-label">Nome do Responsável</label>
+                        <input type="text" class="form-control" id="global_responsible_name" name="responsible_name">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="global_responsible_email" class="form-label">Email do Responsável</label>
+                            <input type="email" class="form-control" id="global_responsible_email" name="responsible_email">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="global_responsible_phone" class="form-label">Telefone do Responsável</label>
+                            <input type="text" class="form-control" id="global_responsible_phone" name="responsible_phone">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Cliente</button>
                 </div>
             </form>
         </div>

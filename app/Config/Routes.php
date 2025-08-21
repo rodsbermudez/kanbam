@@ -34,6 +34,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->resource('project-type', ['controller' => 'Admin\ProjectTypeController']);
         $routes->get('project-type/(:num)/delete', 'Admin\ProjectTypeController::delete/$1');
 
+        // Gerenciamento de Clientes
+        $routes->resource('clients', ['controller' => 'Admin\ClientsController']);
+        $routes->get('clients/(:num)/delete', 'Admin\ClientsController::delete/$1');
+
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
         $routes->resource('projects', ['controller' => 'Admin\ProjectsController', 'except' => ['index', 'show']]);
         $routes->get('projects/(:num)/delete', 'Admin\ProjectsController::delete/$1');

@@ -22,6 +22,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Cliente</th>
                 <th>Nome</th>
                 <th>Descrição</th>
                 <th style="width: 150px;">Ações</th>
@@ -31,6 +32,13 @@
             <?php foreach ($projects as $project): ?>
             <tr>
                 <td><?= $project->id ?></td>
+                <td>
+                    <?php if (!empty($project->client_tag)): ?>
+                        <span class="badge" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
+                    <?php else: ?>
+                        <span class="text-muted small">—</span>
+                    <?php endif; ?>
+                </td>
                 <td><?= esc($project->name) ?></td>
                 <td><?= esc(character_limiter($project->description, 100)) ?></td>
                 <td>

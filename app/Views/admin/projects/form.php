@@ -35,6 +35,20 @@
                     <textarea class="form-control" id="description" name="description" rows="4"><?= old('description', $project->description ?? '') ?></textarea>
                 </div>
 
+                <div class="mb-3">
+                    <label for="client_id" class="form-label">Cliente</label>
+                    <select class="form-select" id="client_id" name="client_id">
+                        <option value="">-- Nenhum cliente associado --</option>
+                        <?php if (!empty($clients)): ?>
+                            <?php foreach ($clients as $client): ?>
+                                <option value="<?= $client->id ?>" <?= (isset($project) && $project->client_id == $client->id) ? 'selected' : '' ?>>
+                                    <?= esc($client->name) ?> (<?= esc($client->tag) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Salvar</button>
                 <a href="<?= site_url('admin/projects') ?>" class="btn btn-secondary">Cancelar</a>
             </form>

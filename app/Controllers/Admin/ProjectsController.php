@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\ProjectModel;
 use App\Models\ProjectUserModel;
+use App\Models\ClientModel;
 use App\Models\TaskModel;
 use App\Models\ProjectDocumentModel;
 use App\Models\ProjectTypeModel;
@@ -23,15 +24,22 @@ class ProjectsController extends BaseController
         $projectModel = new ProjectModel();
         $search = $this->request->getGet('search');
 
+        // Base query com join para incluir dados do cliente
+        $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+                     ->join('clients', 'clients.id = projects.client_id', 'left');
+
         // Se for admin, busca todos os projetos. Senão, busca apenas os projetos do usuário.
         if (session()->get('is_admin')) {
             if ($search) {
-                $projectModel->like('name', $search)
-                             ->orLike('description', $search);
+                $projectModel->groupStart()
+                             ->like('projects.name', $search)
+                             ->orLike('projects.description', $search)
+                             ->orLike('clients.name', $search) // Busca por nome do cliente
+                             ->groupEnd();
             }
             $projects = $projectModel->findAll();
         } else {
-            $projects = $projectModel->getProjectsForUser(session()->get('user_id'), $search);
+            $projects = $projectModel->getProjectsForUser(session()->get('user_id'), $search); // getProjectsForUser já faz o join
         }
 
         $data = [
@@ -48,8 +56,10 @@ class ProjectsController extends BaseController
      */
     public function new()
     {
+        $clientModel = new ClientModel();
         return view('admin/projects/form', [
-            'title' => 'Novo Projeto'
+            'title'   => 'Novo Projeto',
+            'clients' => $clientModel->orderBy('name', 'ASC')->findAll()
         ]);
     }
 
@@ -59,8 +69,14 @@ class ProjectsController extends BaseController
     public function create()
     {
         $projectModel = new ProjectModel();
+        $data = $this->request->getPost();
 
-        if ($projectModel->save($this->request->getPost())) {
+        // Garante que um client_id vazio seja salvo como NULL
+        if (empty($data['client_id'])) {
+            $data['client_id'] = null;
+        }
+
+        if ($projectModel->save($data)) {
             return redirect()->to('/admin/projects')->with('success', 'Projeto criado com sucesso.');
         }
 
@@ -76,8 +92,11 @@ class ProjectsController extends BaseController
 
         $projectModel = new ProjectModel();
         $userModel = new UserModel();
-
-        $project = $projectModel->find($id);
+        
+        $project = $projectModel
+            ->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+            ->join('clients', 'clients.id = projects.client_id', 'left')
+            ->find($id);
 
         if (!$project) {
             return redirect()->to('/admin/projects')->with('error', 'Projeto não encontrado.');
@@ -186,9 +205,12 @@ class ProjectsController extends BaseController
             return redirect()->to('/admin/projects')->with('error', 'Projeto não encontrado.');
         }
 
+        $clientModel = new ClientModel();
+
         return view('admin/projects/form', [
             'title'   => 'Editar Projeto: ' . esc($project->name),
-            'project' => $project
+            'project' => $project,
+            'clients' => $clientModel->orderBy('name', 'ASC')->findAll()
         ]);
     }
 
@@ -198,8 +220,14 @@ class ProjectsController extends BaseController
     public function update($id)
     {
         $projectModel = new ProjectModel();
+        $data = $this->request->getPost();
 
-        if ($projectModel->update($id, $this->request->getPost())) {
+        // Garante que um client_id vazio seja salvo como NULL
+        if (empty($data['client_id'])) {
+            $data['client_id'] = null;
+        }
+
+        if ($projectModel->update($id, $data)) {
             return redirect()->to('/admin/projects')->with('success', 'Projeto atualizado com sucesso.');
         }
 
