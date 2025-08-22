@@ -66,41 +66,51 @@ class TaskModel extends Model
      * Busca tarefas atribuídas a um usuário que vencem nos próximos X dias (não inclui atrasadas).
      *
      * @param int $userId ID do usuário.
-     * @param int $days   Número de dias no futuro para a verificação.
+     * @param int $days Número de dias no futuro para a verificação.
+     * @param int|null $clientId ID do cliente para filtrar (opcional).
      * @return array      Lista de tarefas.
      */
-    public function getUpcomingTasksForUser($userId, $days = 7)
+    public function getUpcomingTasksForUser($userId, $days = 7, $clientId = null)
     {
         $dateLimit = date('Y-m-d', strtotime("+$days days"));
         $today = date('Y-m-d');
 
-        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
                     ->join('projects', 'projects.id = tasks.project_id')
                     ->where('tasks.user_id', $userId)
                     ->where('tasks.due_date >=', $today)
                     ->where('tasks.due_date <=', $dateLimit)
-                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
-                    ->orderBy('tasks.due_date', 'ASC')
-                    ->findAll();
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada']);
+
+        if ($clientId) {
+            $builder->where('projects.client_id', $clientId);
+        }
+
+        return $builder->orderBy('tasks.due_date', 'ASC')->findAll();
     }
 
     /**
      * Busca tarefas atribuídas a um usuário que estão com a data de entrega vencida.
      *
      * @param int $userId ID do usuário.
+     * @param int|null $clientId ID do cliente para filtrar (opcional).
      * @return array      Lista de tarefas.
      */
-    public function getOverdueTasksForUser($userId)
+    public function getOverdueTasksForUser($userId, $clientId = null)
     {
         $today = date('Y-m-d');
 
-        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
                     ->join('projects', 'projects.id = tasks.project_id')
                     ->where('tasks.user_id', $userId)
                     ->where('tasks.due_date <', $today)
-                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
-                    ->orderBy('tasks.due_date', 'ASC')
-                    ->findAll();
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada']);
+
+        if ($clientId) {
+            $builder->where('projects.client_id', $clientId);
+        }
+
+        return $builder->orderBy('tasks.due_date', 'ASC')->findAll();
     }
 
     protected $validationMessages   = [

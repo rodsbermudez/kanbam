@@ -2,7 +2,29 @@
 <?= $this->include('partials/navbar') ?>
 
 <main class="container-fluid mt-6 px-4">
-    <h1 class="mb-4">Dashboard</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Dashboard</h1>
+            <?php if ($selected_client): ?>
+                <p class="text-muted mb-0">
+                    Exibindo dados para o cliente: 
+                    <span class="badge fs-6" style="background-color: <?= esc($selected_client->color ?? '#6c757d') ?>;">
+                        <?= esc($selected_client->name) ?>
+                    </span>
+                    <a href="<?= site_url('dashboard') ?>" class="ms-2 text-decoration-none" title="Limpar filtro">&times;</a>
+                </p>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Filtro de Cliente -->
+        <div style="width: 350px;">
+            <form id="clientFilterForm" method="get" action="<?= site_url('dashboard') ?>">
+                <select id="client-select" name="client_id" placeholder="Filtrar por cliente...">
+                    <!-- Options will be populated by TomSelect, but we can pre-fill for non-JS users -->
+                </select>
+            </form>
+        </div>
+    </div>
 
     <div class="row" data-masonry='{"percentPosition": true }'>
 
@@ -62,5 +84,27 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new TomSelect('#client-select', {
+        plugins: ['clear_button'],
+        valueField: 'id',
+        labelField: 'name',
+        searchField: 'name',
+        options: [
+            <?php foreach ($clients as $client): ?>
+            {id: <?= $client->id ?>, name: '<?= esc($client->name, 'js') ?>'},
+            <?php endforeach; ?>
+        ],
+        items: ['<?= $selected_client_id ?? '' ?>'],
+        create: false,
+        onChange: function(value) {
+            // Submete o formulário quando um cliente é selecionado ou o filtro é limpo
+            document.getElementById('clientFilterForm').submit();
+        }
+    });
+});
+</script>
 
 <?= $this->include('partials/footer') ?>
