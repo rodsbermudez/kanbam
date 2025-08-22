@@ -4,13 +4,13 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\ProjectModel;
+use App\Models\UserModel;
 use App\Models\ProjectUserModel;
 use App\Models\ClientModel;
 use App\Models\TaskModel;
 use App\Models\ProjectDocumentModel;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskNoteModel;
-use App\Models\UserModel;
 
 class ProjectsController extends BaseController
 {
@@ -20,6 +20,7 @@ class ProjectsController extends BaseController
     public function index()
     {
         helper('text');
+        helper('user');
 
         $projectModel = new ProjectModel();
         $search = $this->request->getGet('search');
@@ -42,10 +43,47 @@ class ProjectsController extends BaseController
             $projects = $projectModel->getProjectsForUser(session()->get('user_id'), $search); // getProjectsForUser já faz o join
         }
 
+        $projectTaskStats = [];
+        $projectMembers = [];
+
+        if (!empty($projects)) {
+            $projectIds = array_map(fn($p) => $p->id, $projects);
+
+            // 1. Busca as estatísticas de tarefas (total, concluídas, atrasadas)
+            $taskModel = new TaskModel();
+            $taskStatsResult = $taskModel->select('
+                project_id,
+                COUNT(id) as total_tasks,
+                SUM(CASE WHEN status = "concluída" THEN 1 ELSE 0 END) as completed_tasks,
+                SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ("concluída", "cancelada") THEN 1 ELSE 0 END) as overdue_tasks
+            ')
+            ->whereIn('project_id', $projectIds)
+            ->groupBy('project_id')
+            ->findAll();
+
+            // Cria um mapa de project_id => stats object
+            foreach ($taskStatsResult as $row) {
+                $projectTaskStats[$row->project_id] = $row;
+            }
+
+            // 2. Busca os membros dos projetos listados
+            $userModel = new UserModel();
+            $membersResult = $userModel->select('users.*, project_users.project_id')
+                                       ->join('project_users', 'project_users.user_id = users.id')
+                                       ->whereIn('project_users.project_id', $projectIds)
+                                       ->findAll();
+            // Cria um mapa de project_id => [user, user, ...]
+            foreach ($membersResult as $member) {
+                $projectMembers[$member->project_id][] = $member;
+            }
+        }
+
         $data = [
-            'title'    => 'Gerenciar Projetos',
-            'projects' => $projects,
-            'search'   => $search,
+            'title'            => 'Gerenciar Projetos',
+            'projects'         => $projects,
+            'search'           => $search,
+            'project_task_stats' => $projectTaskStats,
+            'project_members'  => $projectMembers,
         ];
 
         return view('admin/projects/index', $data);

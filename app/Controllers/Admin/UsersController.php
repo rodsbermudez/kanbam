@@ -3,6 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\ProjectModel;
+use App\Models\ProjectUserModel;
+use App\Models\TaskModel;
 use App\Models\UserModel;
 
 class UsersController extends BaseController
@@ -13,9 +16,41 @@ class UsersController extends BaseController
     public function index()
     {
         $userModel = new UserModel();
+        $users = $userModel->where('is_active', 1)->orderBy('name', 'ASC')->findAll();
+
+        $projectCounts = [];
+        $openTaskCounts = [];
+
+        if (!empty($users)) {
+            $userIds = array_map(fn($u) => $u->id, $users);
+
+            // 1. Busca a contagem de projetos por usuário
+            $projectUserModel = new ProjectUserModel();
+            $projectCountsResult = $projectUserModel->select('user_id, COUNT(id) as project_count')
+                                                     ->whereIn('user_id', $userIds)
+                                                     ->groupBy('user_id')
+                                                     ->findAll();
+            foreach ($projectCountsResult as $row) {
+                $projectCounts[$row->user_id] = $row->project_count;
+            }
+
+            // 2. Busca a contagem de tarefas abertas por usuário
+            $taskModel = new TaskModel();
+            $openTaskCountsResult = $taskModel->select('user_id, COUNT(id) as task_count')
+                                              ->whereIn('user_id', $userIds)
+                                              ->whereNotIn('status', ['concluída', 'cancelada'])
+                                              ->groupBy('user_id')
+                                              ->findAll();
+            foreach ($openTaskCountsResult as $row) {
+                $openTaskCounts[$row->user_id] = $row->task_count;
+            }
+        }
+
         $data = [
-            'title' => 'Gerenciar Usuários',
-            'users' => $userModel->findAll()
+            'title'            => 'Gerenciar Usuários',
+            'users'            => $users,
+            'project_counts'   => $projectCounts,
+            'open_task_counts' => $openTaskCounts,
         ];
         return view('admin/users/index', $data);
     }
@@ -90,6 +125,35 @@ class UsersController extends BaseController
         }
 
         return redirect()->back()->withInput()->with('errors', $userModel->errors());
+    }
+
+    /**
+     * Exibe os detalhes de um usuário específico, seus projetos e tarefas.
+     */
+    public function show($id)
+    {
+        helper('text');
+        helper('user');
+        $userModel = new UserModel();
+        $projectModel = new ProjectModel();
+        $taskModel = new TaskModel();
+
+        $user = $userModel->find($id);
+
+        if (!$user) {
+            return redirect()->to('/admin/users')->with('error', 'Usuário não encontrado.');
+        }
+
+        $data = [
+            'title'          => 'Detalhes do Usuário: ' . esc($user->name),
+            'user'           => $user,
+            'projects'       => $projectModel->getProjectsForUser($id),
+            'upcoming_tasks' => $taskModel->getUpcomingTasksForUser($id),
+            'overdue_tasks'  => $taskModel->getOverdueTasksForUser($id),
+        ];
+
+        // Reutiliza a view de detalhes do cliente, adaptando-a
+        return view('admin/users/show', $data);
     }
 
     /**

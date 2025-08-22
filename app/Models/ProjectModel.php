@@ -42,4 +42,14 @@ class ProjectModel extends Model
         // Garante que a ordenação e outras configurações do model sejam aplicadas
         return $builder->findAll();
     }
+
+    /**
+     * Retorna os projetos associados a um cliente específico.
+     * @param int $clientId
+     * @return array
+     */
+    public function getProjectsForClient(int $clientId)
+    {
+        return $this->where('client_id', $clientId)->orderBy('name', 'ASC')->findAll();
+    }
 }

@@ -12,6 +12,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Clickable table rows
+    document.querySelectorAll('tr[data-href]').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't navigate if the click is on a link, button, or input inside the row
+            if (e.target.closest('a, button, input')) {
+                return;
+            }
+            window.location.href = this.dataset.href;
+        });
+    });
+
     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
     toastElList.map(function (toastEl) {
         const toast = new bootstrap.Toast(toastEl, {

@@ -4,6 +4,8 @@ namespace App\Controllers\Admin; // <-- Verifique se o namespace inclui "\Admin"
 
 use App\Controllers\BaseController;
 use App\Models\ClientModel;
+use App\Models\ProjectModel;
+use App\Models\TaskModel;
 
 class ClientsController extends BaseController
 {
@@ -43,6 +45,35 @@ class ClientsController extends BaseController
 
         return redirect()->back()->withInput()->with('errors', $clientModel->errors());
     }
+
+    /**
+     * Exibe os detalhes de um cliente específico, seus projetos e tarefas.
+     */
+    public function show($id)
+    {
+        helper('text');
+        $clientModel = new ClientModel();
+        $projectModel = new ProjectModel();
+        $taskModel = new TaskModel();
+
+        $client = $clientModel->find($id);
+
+        if (!$client) {
+            return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
+        }
+
+        $data = [
+            'title'          => 'Detalhes do Cliente: ' . esc($client->name),
+            'client'         => $client,
+            'projects'       => $projectModel->getProjectsForClient($id),
+            'upcoming_tasks' => $taskModel->getUpcomingTasksForClient($id),
+            'overdue_tasks'  => $taskModel->getOverdueTasksForClient($id),
+        ];
+
+        return view('admin/clients/show', $data);
+    }
+
+
 
     /**
      * Exibe o formulário para editar um cliente existente.

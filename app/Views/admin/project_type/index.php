@@ -9,7 +9,7 @@
 
     <p class="text-muted">Gerencie os modelos (prompts) que a Inteligência Artificial usará para gerar tarefas para diferentes tipos de projeto.</p>
 
-    <table class="table table-striped table-hover">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -24,11 +24,10 @@
                 </tr>
             <?php else: ?>
                 <?php foreach ($types as $type): ?>
-                <tr>
+                <tr class="clickable-row" data-href="<?= site_url('admin/project-type/' . $type->id . '/edit') ?>">
                     <td><?= $type->id ?></td>
                     <td><?= esc($type->name) ?></td>
                     <td>
-                        <a href="<?= site_url('admin/project-type/' . $type->id . '/edit') ?>" class="btn btn-sm btn-primary">Editar</a>
                         <a href="<?= site_url('admin/project-type/' . $type->id . '/delete') ?>" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover este tipo de projeto?')">Remover</a>
                     </td>
                 </tr>

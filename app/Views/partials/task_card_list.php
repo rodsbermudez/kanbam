@@ -29,7 +29,7 @@ foreach ($tasks as $task):
 ?>
 <a href="<?= site_url('admin/projects/' . $task->project_id_for_link) ?>" class="kanban-card <?= $cardClass ?> text-decoration-none d-block">
     <div class="mb-2">
-        <span class="badge text-bg-secondary project-name-badge">
+        <span class="badge bg-secondary text-dark project-name-badge">
             <i class="bi bi-folder-fill me-1"></i><?= esc($task->project_name) ?>
         </span>
     </div>

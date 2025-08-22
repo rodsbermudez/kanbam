@@ -113,6 +113,47 @@ class TaskModel extends Model
         return $builder->orderBy('tasks.due_date', 'ASC')->findAll();
     }
 
+    /**
+     * Busca tarefas de um cliente que vencem nos próximos X dias (não inclui atrasadas).
+     *
+     * @param int $clientId ID do cliente.
+     * @param int $days     Número de dias no futuro para a verificação.
+     * @return array        Lista de tarefas.
+     */
+    public function getUpcomingTasksForClient($clientId, $days = 7)
+    {
+        $dateLimit = date('Y-m-d', strtotime("+$days days"));
+        $today = date('Y-m-d');
+
+        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+                    ->join('projects', 'projects.id = tasks.project_id')
+                    ->where('projects.client_id', $clientId)
+                    ->where('tasks.due_date >=', $today)
+                    ->where('tasks.due_date <=', $dateLimit)
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
+                    ->orderBy('tasks.due_date', 'ASC')
+                    ->findAll();
+    }
+
+    /**
+     * Busca tarefas de um cliente que estão com a data de entrega vencida.
+     *
+     * @param int $clientId ID do cliente.
+     * @return array        Lista de tarefas.
+     */
+    public function getOverdueTasksForClient($clientId)
+    {
+        $today = date('Y-m-d');
+
+        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+                    ->join('projects', 'projects.id = tasks.project_id')
+                    ->where('projects.client_id', $clientId)
+                    ->where('tasks.due_date <', $today)
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
+                    ->orderBy('tasks.due_date', 'ASC')
+                    ->findAll();
+    }
+
     protected $validationMessages   = [
         'title' => [
             'required'   => 'O campo título é obrigatório.',

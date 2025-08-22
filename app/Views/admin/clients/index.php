@@ -7,7 +7,7 @@
         <a href="<?= site_url('admin/clients/new') ?>" class="btn btn-success">Novo Cliente</a>
     </div>
 
-    <table class="table table-striped table-hover">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -26,7 +26,7 @@
                 </tr>
             <?php else: ?>
                 <?php foreach ($clients as $client): ?>
-                <tr>
+            <tr class="clickable-row" data-href="<?= site_url('admin/clients/' . $client->id) ?>">
                     <td><?= $client->id ?></td>
                     <td><?= esc($client->name) ?></td>
                     <td><span class="badge" style="background-color: <?= esc($client->color ?? '#6c757d') ?>;"><?= esc($client->tag) ?></span></td>
