@@ -2,28 +2,32 @@
 
 namespace App\Controllers;
 
-use App\Models\ClientModel;
+use App\Models\ProjectModel;
 use App\Models\TaskModel;
 
 class DashboardController extends BaseController
 {
     /**
-     * Exibe a página principal do dashboard do usuário.
+     * Exibe o dashboard principal do usuário.
      */
     public function index()
     {
-        $taskModel = new TaskModel();
-        $clientModel = new ClientModel();
         $userId = session()->get('user_id');
-        $clientId = $this->request->getGet('client_id');
+
+        // Se não houver usuário na sessão, redireciona para o login.
+        // Isso é uma salvaguarda, o filtro de autenticação deve cuidar disso.
+        if (!$userId) {
+            return redirect()->to('/login');
+        }
+
+        $projectModel = new ProjectModel();
+        $taskModel = new TaskModel();
 
         $data = [
-            'title'              => 'Dashboard',
-            'clients'            => $clientModel->orderBy('name', 'ASC')->findAll(),
-            'selected_client'    => $clientId ? $clientModel->find($clientId) : null,
-            'upcoming_tasks'     => $taskModel->getUpcomingTasksForUser($userId, 7, $clientId),
-            'overdue_tasks'      => $taskModel->getOverdueTasksForUser($userId, $clientId),
-            'selected_client_id' => $clientId,
+            'title'          => 'Dashboard',
+            'projects'       => $projectModel->getProjectsForUser($userId),
+            'upcoming_tasks' => $taskModel->getUpcomingTasksForUser($userId, 7), // 7 dias por padrão
+            'overdue_tasks'  => $taskModel->getOverdueTasksForUser($userId),
         ];
 
         return view('dashboard/index', $data);
