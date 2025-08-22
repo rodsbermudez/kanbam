@@ -17,6 +17,9 @@ $routes->get('logout', 'AuthController::logout');
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('dashboard', 'DashboardController::index', ['as' => 'dashboard']);
 
+    // Rota para a busca global de projetos (para a navbar)
+    $routes->get('projects/list-for-select', 'ProjectSearchController::listForSelect');
+
     // Rota para buscar tarefas do usuário que vencem em breve (para a sidebar)
     $routes->get('tasks/due-soon', 'TasksController::dueSoon');
 

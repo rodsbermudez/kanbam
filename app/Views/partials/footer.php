@@ -107,6 +107,47 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
 
     fetchDueTasks(true); // Busca a contagem inicial ao carregar a página
+
+    // --- Lógica para o Seletor de Projetos Global ---
+    const projectSearchEl = document.getElementById('globalProjectSearch');
+    if (projectSearchEl) {
+        new TomSelect(projectSearchEl, {
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name', 'client_tag'], // Mantém a busca no lado do cliente para os dados pré-carregados
+            preload: true, // Carrega os projetos ao iniciar
+            // Custom rendering
+            render: {
+                option: function(data, escape) {
+                    let tagHtml = '';
+                    if (data.client_tag) {
+                        tagHtml = `<span class="badge me-2" style="background-color: ${escape(data.client_color || '#6c757d')}; color: #fff;">${escape(data.client_tag)}</span>`;
+                    }
+                    return `<div>${tagHtml}${escape(data.name)}</div>`;
+                },
+                item: function(data, escape) {
+                    // Para o item selecionado, mostramos apenas o nome para manter a navbar limpa.
+                    return `<div>${escape(data.name)}</div>`;
+                }
+            },
+            // Load data via AJAX
+            load: function(query, callback) {
+                const url = `<?= site_url('projects/list-for-select') ?>?search=${encodeURIComponent(query)}`;
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                .then(response => response.json())
+                .then(json => {
+                    if (json.success) callback(json.projects);
+                    else callback();
+                }).catch(()=> callback());
+            },
+            // Redirect on change
+            onChange: function(value) {
+                if (value) {
+                    window.location.href = `<?= site_url('admin/projects/') ?>${value}`;
+                }
+            }
+        });
+    }
 });
 </script>
 </body>

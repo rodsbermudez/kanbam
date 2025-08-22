@@ -32,7 +32,10 @@
                 <?php endif; ?>
             </ul>
             <ul class="navbar-nav">
-                <li class="nav-item position-relative">
+                <li class="nav-item d-flex align-items-center">
+                    <select id="globalProjectSearch" placeholder="Buscar projeto..." style="width: 250px;"></select>
+                </li>
+                <li class="nav-item position-relative ms-2">
                     <a class="nav-link" href="#" id="open-due-tasks-sidebar" title="Tarefas Atrasadas e Próximas">
                         <i class="bi bi-calendar-check fs-5"></i>
                         <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle d-none" id="due-tasks-count" style="font-size: 0.6em; margin-top: 0.5rem;"></span>
