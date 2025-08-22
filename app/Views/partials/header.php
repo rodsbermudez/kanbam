@@ -110,6 +110,40 @@
         .list-group-item-action:focus h6 {
             color: #fff;
         }
+
+        /* Tom Select dark theme fix for legibility */
+        .ts-control, .ts-control input {
+            background-color: #f8f9fa !important; /* Standard Bootstrap light */
+            color: #212529 !important; /* Standard Bootstrap dark text */
+            border-color: #dee2e6 !important; /* Standard Bootstrap gray border */
+        }
+
+        /* The selected item tag inside the control */
+        .ts-control .item {
+            background-color: var(--bs-primary) !important;
+            color: white !important;
+        }
+
+        /* Dropdown container */
+        .ts-dropdown {
+            background: #f8f9fa !important;
+            border-color: #dee2e6 !important;
+        }
+
+        /* Options in the dropdown */
+        .ts-dropdown .option {
+            color: #212529 !important;
+        }
+
+        /* Active/hovered option in the dropdown */
+        .ts-dropdown .option.active, 
+        .ts-dropdown .option:hover {
+            background-color: var(--bs-primary) !important;
+            color: white !important;
+        }
+        .ts-control .ts-clear-button {
+            color: #212529 !important;
+        }
     </style>
 </head>
 <body>
