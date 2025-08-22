@@ -168,12 +168,16 @@
                                                     <?php else: ?>
                                                         <div style="width: 24px; height: 24px;"></div> <!-- Placeholder para manter o alinhamento -->
                                                     <?php endif; ?>
-                                                    
-                                                    <small class="text-muted">
-                                                        <?php if (!empty($task->due_date)): ?>
-                                                            <?= date('d/m/Y', strtotime($task->due_date)) ?>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <?php if (!empty($project->client_tag)): ?>
+                                                            <span class="badge" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
                                                         <?php endif; ?>
-                                                    </small>
+                                                        <small class="text-muted">
+                                                            <?php if (!empty($task->due_date)): ?>
+                                                                <?= date('d/m/Y', strtotime($task->due_date)) ?>
+                                                            <?php endif; ?>
+                                                        </small>
+                                                    </div>
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>

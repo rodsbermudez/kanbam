@@ -52,8 +52,9 @@ class TaskModel extends Model
         $dateLimit = date('Y-m-d', strtotime("+$days days"));
         $today = date('Y-m-d');
 
-        return $this->select('tasks.*, projects.name as project_name, projects.id as project_id_for_link')
+        return $this->select('tasks.*, projects.name as project_name, projects.id as project_id_for_link, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
+                    ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('tasks.user_id', $userId)
                     ->where('tasks.due_date IS NOT NULL') // Apenas tarefas com data
                     ->where('tasks.due_date <=', $dateLimit)
@@ -75,8 +76,9 @@ class TaskModel extends Model
         $dateLimit = date('Y-m-d', strtotime("+$days days"));
         $today = date('Y-m-d');
 
-        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
+                    ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('tasks.user_id', $userId)
                     ->where('tasks.due_date >=', $today)
                     ->where('tasks.due_date <=', $dateLimit)
@@ -100,8 +102,9 @@ class TaskModel extends Model
     {
         $today = date('Y-m-d');
 
-        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
+                    ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('tasks.user_id', $userId)
                     ->where('tasks.due_date <', $today)
                     ->whereNotIn('tasks.status', ['concluída', 'cancelada']);
@@ -125,8 +128,9 @@ class TaskModel extends Model
         $dateLimit = date('Y-m-d', strtotime("+$days days"));
         $today = date('Y-m-d');
 
-        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
+                    ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('projects.client_id', $clientId)
                     ->where('tasks.due_date >=', $today)
                     ->where('tasks.due_date <=', $dateLimit)
@@ -145,8 +149,9 @@ class TaskModel extends Model
     {
         $today = date('Y-m-d');
 
-        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id')
+        return $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
+                    ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('projects.client_id', $clientId)
                     ->where('tasks.due_date <', $today)
                     ->whereNotIn('tasks.status', ['concluída', 'cancelada'])

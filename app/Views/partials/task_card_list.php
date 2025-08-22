@@ -1,57 +1,40 @@
-<?php
-helper('user');
-helper('text');
-
-foreach ($tasks as $task):
-    // Lógica para determinar a cor do card com base na data de entrega
-    $cardClass = '';
-    if (!empty($task->due_date)) {
-        try {
-            $dueDate = new \DateTime($task->due_date);
-            $today = new \DateTime('today');
-            
-            if ($dueDate < $today) {
-                $cardClass = 'card-danger';
-            } else {
-                $interval = $today->diff($dueDate);
-                if ($interval->days <= 3) {
-                    $cardClass = 'card-warning';
-                } else {
-                    $cardClass = 'card-info';
-                }
-            }
-        } catch (Exception $e) {
-            // Data inválida, não aplica classe
-        }
-    } else {
-        $cardClass = 'bg-light';
-    }
-?>
-<a href="<?= site_url('admin/projects/' . $task->project_id_for_link) ?>" class="kanban-card <?= $cardClass ?> text-decoration-none d-block">
-    <div class="mb-2">
-        <span class="badge bg-secondary text-dark project-name-badge">
-            <i class="bi bi-folder-fill me-1"></i><?= esc($task->project_name) ?>
-        </span>
-    </div>
-
-    <h6 class="card-title fw-bold mb-0"><?= esc($task->title) ?></h6>
-
-    <?php if (!empty($task->description)): ?>
-        <p class="card-text mt-2 mb-0"><?= esc(character_limiter($task->description, 80)) ?></p>
-    <?php endif; ?>
-
-    <div class="kanban-card-footer d-flex justify-content-between align-items-center mt-3">
-        <?= user_icon($users_by_id[$task->user_id] ?? null, 24) ?>
-        
-        <small class="text-muted">
-            <?php if (!empty($task->due_date)): ?>
-                <i class="bi bi-calendar-event"></i> <?= date('d/m/Y', strtotime($task->due_date)) ?>
-            <?php endif; ?>
-        </small>
-    </div>
-</a>
-<?php endforeach; ?>
-
 <?php if (empty($tasks)): ?>
-    <p class="text-muted text-center p-4">Nenhuma tarefa vencendo nos próximos 7 dias.</p>
+    <div class="p-3 text-center text-muted">
+        Nenhuma tarefa vencendo em breve.
+    </div>
+<?php else: ?>
+    <?php foreach ($tasks as $task): ?>
+        <?php
+            $isOverdue = false;
+            if (!empty($task->due_date)) {
+                try {
+                    $dueDate = new \DateTime($task->due_date);
+                    $today = new \DateTime('today');
+                    if ($dueDate < $today) {
+                        $isOverdue = true;
+                    }
+                } catch (Exception $e) {}
+            }
+        ?>
+        <a href="<?= site_url('admin/projects/' . $task->project_id_for_link) ?>" class="text-decoration-none text-dark">
+            <div class="card mb-2 task-card-sidebar <?= $isOverdue ? 'border-danger' : '' ?>">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="card-title mb-1 small"><?= esc($task->title) ?></h6>
+                    </div>
+                    <p class="card-text small text-muted mb-1">
+                        <?= esc($task->project_name) ?>
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <?php if (!empty($task->client_tag)): ?>
+                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
+                        <?php endif; ?>
+                        <small class="text-muted <?= $isOverdue ? 'fw-bold text-danger' : '' ?>">
+                            <?= date('d/m', strtotime($task->due_date)) ?>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </a>
+    <?php endforeach; ?>
 <?php endif; ?>
