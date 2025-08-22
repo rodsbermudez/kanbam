@@ -5,7 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskModel;
-use Gemini;
+use Gemini\Gemini;
 
 class TasksController extends BaseController
 {
