@@ -117,22 +117,22 @@
             position: relative;
         }
         .kanban-nav-btn {
-            position: absolute;
-            top: 50%;
+            position: fixed; /* Garante que as setas fiquem fixas na rolagem vertical */
+            top: 65%;
             transform: translateY(-50%);
-            z-index: 10;
+            z-index: 1040; /* Aumentado para evitar conflitos com outros elementos */
             background-color: rgba(var(--bs-dark-rgb), 0.7);
             border: 1px solid rgba(var(--bs-light-rgb), 0.3);
             color: var(--bs-light);
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .kanban-nav-btn.kanban-nav-left { left: -20px; }
-        .kanban-nav-btn.kanban-nav-right { right: -20px; }
+        .kanban-nav-btn.kanban-nav-left { left: 2.5rem; }
+        .kanban-nav-btn.kanban-nav-right { right: 2.5rem; }
 
         .kanban-board-container {
             overflow-x: auto;
@@ -272,6 +272,13 @@
         }
         .ts-control .ts-clear-button {
             color: #212529 !important;
+        }
+
+        /* Estilos para os botões de ação do FAB (Floating Action Button) */
+        .fab-actions .btn {
+            background-color: var(--bs-secondary) !important;
+            border-color: var(--bs-secondary) !important;
+            color: #fff !important; /* Garante o contraste do ícone */
         }
     </style>
 </head>

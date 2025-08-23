@@ -88,7 +88,7 @@
         <!-- Aba Quadro Kanban -->
         <div class="tab-pane fade <?= $active_tab === 'board' ? 'show active' : '' ?>" id="board-tab-pane" role="tabpanel" aria-labelledby="board-tab" tabindex="0">
             <div class="kanban-wrapper">
-                <button id="kanban-scroll-left" class="btn kanban-nav-btn kanban-nav-left"><i class="bi bi-arrow-left-circle-fill fs-4"></i></button>
+                <button id="kanban-scroll-left" class="btn kanban-nav-btn kanban-nav-left"><i class="bi bi-arrow-left-circle-fill fs-2"></i></button>
                 
                 <div class="kanban-board-container" id="kanban-container">
                     <div class="kanban-board">
@@ -189,7 +189,7 @@
                     </div>
                 </div>
 
-                <button id="kanban-scroll-right" class="btn kanban-nav-btn kanban-nav-right"><i class="bi bi-arrow-right-circle-fill fs-4"></i></button>
+                <button id="kanban-scroll-right" class="btn kanban-nav-btn kanban-nav-right"><i class="bi bi-arrow-right-circle-fill fs-2"></i></button>
             </div>
         </div>
 

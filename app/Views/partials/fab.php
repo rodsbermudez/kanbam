@@ -52,7 +52,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background-color: var(--bs-secondary);
+        background-color: var(--bs-primary) !important;
         color: white;
         display: flex;
         align-items: center;
@@ -62,7 +62,7 @@
         transition: transform 0.2s ease, background-color 0.2s ease;
     }
     .fab-menu-item:hover {
-        background-color: var(--bs-dark);
+        background-color: var(--bs-gray-800) !important;
         transform: scale(1.1);
     }
     .fab-menu-item i {
