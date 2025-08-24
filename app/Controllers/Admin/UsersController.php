@@ -121,7 +121,7 @@ class UsersController extends BaseController
         $data['is_active'] = $data['is_active'] ?? 0;
 
         if ($userModel->update($id, $data)) {
-            return redirect()->to('/admin/users')->with('success', 'Usuário atualizado com sucesso.');
+            return redirect()->to('/admin/users/' . $id)->with('success', 'Usuário atualizado com sucesso.');
         }
 
         return redirect()->back()->withInput()->with('errors', $userModel->errors());
