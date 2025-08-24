@@ -50,6 +50,29 @@ class Database extends Config
             'time'     => 'H:i:s',
         ],
     ];
+
+    /**
+     * Conexão com o banco de dados de relatórios de SEO.
+     * As credenciais são carregadas do arquivo .env.
+     *
+     * @var array<string, mixed>
+     */
+    public array $reportsDB = [
+        'DSN'      => '',
+        'hostname' => 'env:reportsDB.hostname',
+        'username' => 'env:reportsDB.username',
+        'password' => 'env:reportsDB.password',
+        'database' => 'env:reportsDB.database',
+        'DBDriver' => 'env:reportsDB.DBDriver',
+        'DBPrefix' => '',
+        'pConnect' => false,
+        'DBDebug'  => (ENVIRONMENT !== 'production'),
+        'charset'  => 'utf8',
+        'DBCollat' => 'utf8_general_ci',
+        'swapPre'  => '',
+        'failover' => [],
+        'port'     => 3306,
+    ];
     //    /**
     //     * Sample database connection for SQLite3.
     //     *

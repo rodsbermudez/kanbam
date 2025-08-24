@@ -10,6 +10,7 @@ use App\Models\ClientModel;
 use App\Models\TaskModel;
 use App\Models\ProjectDocumentModel;
 use App\Models\ProjectFileModel;
+use App\Models\ImportedReportModel;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskNoteModel;
 
@@ -201,6 +202,13 @@ class ProjectsController extends BaseController
                            ->where('project_files.project_id', $id)
                            ->orderBy('project_files.created_at', 'DESC')->findAll();
 
+        // Busca os relatórios importados para o projeto
+        $importedReportModel = new ImportedReportModel();
+        $imported_reports = $importedReportModel->select('imported_reports.*, users.name as importer_name')
+                                                ->join('users', 'users.id = imported_reports.imported_by_user_id')
+                                                ->where('imported_reports.project_id', $id)
+                                                ->orderBy('imported_reports.original_created_at', 'DESC')->findAll();
+
         // Agrupa as tarefas por status para o quadro Kanban
         $groupedTasks = [];
         foreach ($statuses as $status) {
@@ -231,6 +239,7 @@ class ProjectsController extends BaseController
             'notes_by_task_id' => $notesByTaskId,
             'documents'       => $documents,
             'files'           => $files,
+            'imported_reports' => $imported_reports,
             // Adiciona os tipos de projeto para o modal de IA
             'project_types'   => (new ProjectTypeModel())->findAll(),
             'active_tab'      => $activeTab,

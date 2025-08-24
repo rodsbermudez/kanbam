@@ -53,6 +53,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
         $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
 
+        // Rotas para Relatórios de Projeto
+        $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');
+        $routes->post('projects/(:num)/reports/import', 'Admin\ReportsController::import/$1');
+        $routes->get('reports/(:num)', 'Admin\ReportsController::show/$1');
+        $routes->post('reports/(:num)/delete', 'Admin\ReportsController::delete/$1');
+
         // Gerenciamento de Tarefas
         $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1'); // Rota reativada para o modal específico do projeto
         $routes->post('tasks/create', 'Admin\TasksController::create'); // Nova rota global

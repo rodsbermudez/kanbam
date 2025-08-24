@@ -83,6 +83,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'files' ? 'active' : '' ?>" id="files-tab" data-bs-toggle="tab" data-bs-target="#files-tab-pane" type="button" role="tab" aria-controls="files-tab-pane" aria-selected="<?= $active_tab === 'files' ? 'true' : 'false' ?>">Arquivos</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link <?= $active_tab === 'reports' ? 'active' : '' ?>" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-tab-pane" type="button" role="tab" aria-controls="reports-tab-pane" aria-selected="<?= $active_tab === 'reports' ? 'true' : 'false' ?>">Relatórios</button>
+        </li>
         <?php endif; ?>
     </ul>
 
@@ -291,6 +294,51 @@
                                     <?php endif; ?>
                                     <a href="<?= site_url('admin/files/' . $file->id . '/download') ?>" class="btn btn-sm btn-primary" title="Baixar"><i class="bi bi-download"></i></a>
                                     <form action="<?= site_url('admin/files/' . $file->id . '/delete') ?>" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja remover este arquivo?');">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Remover"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Aba Relatórios -->
+        <div class="tab-pane fade content-constrained <?= $active_tab === 'reports' ? 'show active' : '' ?>" id="reports-tab-pane" role="tabpanel" aria-labelledby="reports-tab" tabindex="0">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Relatórios de SEO Importados</h2>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importReportModal"><i class="bi bi-cloud-download me-2"></i>Importar Relatório</button>
+            </div>
+
+            <?php if (empty($imported_reports)): ?>
+                <div class="alert alert-info">Nenhum relatório foi importado para este projeto ainda.</div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>URL Analisada</th>
+                                <th>Palavra-chave Foco</th>
+                                <th>Tecnologias</th>
+                                <th>Data da Análise</th>
+                                <th>Importado por</th>
+                                <th style="width: 150px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($imported_reports as $report): ?>
+                            <tr>
+                                <td class="align-middle"><strong><?= esc($report->url) ?></strong></td>
+                                <td class="align-middle"><?= esc($report->target_keyword ?: 'N/A') ?></td>
+                                <td class="align-middle"><?= esc($report->tech_stack ?: 'N/A') ?></td>
+                                <td class="align-middle"><?= date('d/m/Y H:i', strtotime($report->original_created_at)) ?></td>
+                                <td class="align-middle"><?= esc($report->importer_name) ?></td>
+                                <td class="align-middle">
+                                    <a href="<?= site_url('admin/reports/' . $report->id) ?>" class="btn btn-sm btn-primary" title="Visualizar"><i class="bi bi-eye"></i></a>
+                                    <form action="<?= site_url('admin/reports/' . $report->id . '/delete') ?>" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja remover este relatório importado?');">
                                         <?= csrf_field() ?>
                                         <button type="submit" class="btn btn-sm btn-danger" title="Remover"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -718,6 +766,37 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Importar Relatório -->
+<div class="modal fade" id="importReportModal" tabindex="-1" aria-labelledby="importReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="importReportModalLabel">Importar Relatório de SEO</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= site_url('admin/projects/' . $project->id . '/reports/import') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <p>Selecione um dos relatórios disponíveis abaixo para importá-lo para este projeto.</p>
+                    <div id="available-reports-container" class="list-group" style="max-height: 400px; overflow-y: auto;">
+                        <!-- A lista de relatórios será carregada aqui via AJAX -->
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="import-error-alert" class="alert alert-danger d-none mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="importReportSubmitBtn" disabled>Importar Selecionado</button>
                 </div>
             </form>
         </div>
@@ -1474,6 +1553,62 @@ document.addEventListener('DOMContentLoaded', function () {
     // Ao carregar a página, se houver um documento para selecionar, carrega-o.
     if (docToSelect) {
         loadDocument(docToSelect);
+    }
+
+    // --- Lógica para o Modal de Importação de Relatórios ---
+    const importReportModalEl = document.getElementById('importReportModal');
+    if (importReportModalEl) {
+        const reportsContainer = document.getElementById('available-reports-container');
+        const submitBtn = document.getElementById('importReportSubmitBtn');
+        const errorAlert = document.getElementById('import-error-alert');
+
+        importReportModalEl.addEventListener('show.bs.modal', function() {
+            // Reseta o estado
+            reportsContainer.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div></div>`;
+            submitBtn.disabled = true;
+            errorAlert.classList.add('d-none');
+
+            // Busca os relatórios disponíveis
+            fetch(`<?= site_url('admin/reports/available/' . $project->id) ?>`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    reportsContainer.innerHTML = ''; // Limpa o spinner
+                    if (data.reports.length > 0) {
+                        data.reports.forEach(report => {
+                            const date = new Date(report.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                            const reportHtml = `
+                                <label class="list-group-item d-flex gap-3">
+                                    <input class="form-check-input flex-shrink-0" type="radio" name="report_id" value="${report.id}">
+                                    <span class="pt-1 form-checked-content">
+                                        <strong>${report.url}</strong>
+                                        <small class="d-block text-muted">
+                                            Palavra-chave: ${report.target_keyword || 'Nenhuma'} | Criado em: ${date}
+                                        </small>
+                                    </span>
+                                </label>
+                            `;
+                            reportsContainer.insertAdjacentHTML('beforeend', reportHtml);
+                        });
+                    } else {
+                        reportsContainer.innerHTML = '<div class="alert alert-info mb-0">Nenhum novo relatório disponível para importação.</div>';
+                    }
+                } else {
+                    errorAlert.textContent = data.message || 'Erro ao buscar relatórios.';
+                    errorAlert.classList.remove('d-none');
+                    reportsContainer.innerHTML = '';
+                }
+            });
+        });
+
+        // Habilita o botão de submit quando um rádio é selecionado
+        reportsContainer.addEventListener('change', function(e) {
+            if (e.target.type === 'radio' && e.target.name === 'report_id') {
+                submitBtn.disabled = false;
+            }
+        });
     }
 });
 </script>
