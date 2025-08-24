@@ -47,6 +47,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
         $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
 
+        // Rotas para Arquivos de Projeto
+        $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
+        $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
+        $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
+        $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
+
         // Gerenciamento de Tarefas
         $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1'); // Rota reativada para o modal específico do projeto
         $routes->post('tasks/create', 'Admin\TasksController::create'); // Nova rota global

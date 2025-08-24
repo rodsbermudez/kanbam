@@ -9,6 +9,7 @@ use App\Models\ProjectUserModel;
 use App\Models\ClientModel;
 use App\Models\TaskModel;
 use App\Models\ProjectDocumentModel;
+use App\Models\ProjectFileModel;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskNoteModel;
 
@@ -193,6 +194,13 @@ class ProjectsController extends BaseController
         $docModel = new ProjectDocumentModel();
         $documents = $docModel->where('project_id', $id)->orderBy('title', 'ASC')->findAll();
 
+        // Busca os arquivos do projeto
+        $fileModel = new ProjectFileModel();
+        $files = $fileModel->select('project_files.*, users.name as uploader_name')
+                           ->join('users', 'users.id = project_files.user_id')
+                           ->where('project_files.project_id', $id)
+                           ->orderBy('project_files.created_at', 'DESC')->findAll();
+
         // Agrupa as tarefas por status para o quadro Kanban
         $groupedTasks = [];
         foreach ($statuses as $status) {
@@ -222,6 +230,7 @@ class ProjectsController extends BaseController
             'users_by_id'     => $usersById,
             'notes_by_task_id' => $notesByTaskId,
             'documents'       => $documents,
+            'files'           => $files,
             // Adiciona os tipos de projeto para o modal de IA
             'project_types'   => (new ProjectTypeModel())->findAll(),
             'active_tab'      => $activeTab,

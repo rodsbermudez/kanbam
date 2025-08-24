@@ -80,6 +80,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'documents' ? 'active' : '' ?>" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane" type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="<?= $active_tab === 'documents' ? 'true' : 'false' ?>">Documentos</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link <?= $active_tab === 'files' ? 'active' : '' ?>" id="files-tab" data-bs-toggle="tab" data-bs-target="#files-tab-pane" type="button" role="tab" aria-controls="files-tab-pane" aria-selected="<?= $active_tab === 'files' ? 'true' : 'false' ?>">Arquivos</button>
+        </li>
         <?php endif; ?>
     </ul>
 
@@ -230,6 +233,74 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Aba Arquivos -->
+        <div class="tab-pane fade content-constrained <?= $active_tab === 'files' ? 'show active' : '' ?>" id="files-tab-pane" role="tabpanel" aria-labelledby="files-tab" tabindex="0">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Arquivos do Projeto</h2>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFileModal"><i class="bi bi-upload me-2"></i>Novo Arquivo</button>
+            </div>
+
+            <?php
+                // Lista de extensões que podem ser abertas diretamente no navegador
+                $viewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt', 'md', 'webp'];
+            ?>
+            <?php if (empty($files)): ?>
+                <div class="alert alert-info">Nenhum arquivo foi enviado para este projeto ainda.</div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th class="text-center">Tipo</th>
+                                <th class="text-center">Tamanho</th>
+                                <th>Enviado por</th>
+                                <th>Data</th>
+                                <th style="width: 180px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($files as $file): ?>
+                            <tr>
+                                <td class="align-middle"><strong><?= esc($file->title) ?></strong></td>
+                                <td class="align-middle"><small><?= esc($file->description) ?></small></td>
+                                <td class="text-center align-middle"><span class="badge bg-secondary"><?= esc(strtoupper(pathinfo($file->file_name, PATHINFO_EXTENSION))) ?></span></td>
+                                <td class="text-center align-middle">
+                                    <?php
+                                        $size = $file->file_size;
+                                        if ($size < 1024) {
+                                            echo $size . ' B';
+                                        } elseif ($size < 1048576) {
+                                            echo round($size / 1024, 1) . ' KB';
+                                        } else {
+                                            echo round($size / 1048576, 1) . ' MB';
+                                        }
+                                    ?>
+                                </td>
+                                <td class="align-middle"><?= esc($file->uploader_name) ?></td>
+                                <td class="align-middle"><?= date('d/m/Y H:i', strtotime($file->created_at)) ?></td>
+                                <td class="align-middle">
+                                    <?php
+                                        $extension = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+                                        if (in_array($extension, $viewableExtensions)):
+                                    ?>
+                                        <a href="<?= site_url('admin/files/' . $file->id . '/view') ?>" class="btn btn-sm btn-info" title="Ver" target="_blank"><i class="bi bi-eye"></i></a>
+                                    <?php endif; ?>
+                                    <a href="<?= site_url('admin/files/' . $file->id . '/download') ?>" class="btn btn-sm btn-primary" title="Baixar"><i class="bi bi-download"></i></a>
+                                    <form action="<?= site_url('admin/files/' . $file->id . '/delete') ?>" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja remover este arquivo?');">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Remover"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- Aba Membros -->
@@ -614,6 +685,39 @@
                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         Salvar Documento
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Arquivo -->
+<div class="modal fade" id="addFileModal" tabindex="-1" aria-labelledby="addFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addFileModalLabel">Enviar Novo Arquivo</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= site_url('admin/projects/' . $project->id . '/files') ?>" method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file_title" class="form-label">Título do Arquivo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="file_title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file_description" class="form-label">Breve Descrição</label>
+                        <textarea class="form-control" id="file_description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file_upload" class="form-label">Selecione o Arquivo <span class="text-danger">*</span></label>
+                        <input class="form-control" type="file" id="file_upload" name="file" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar</button>
                 </div>
             </form>
         </div>
