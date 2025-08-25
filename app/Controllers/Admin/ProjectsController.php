@@ -197,7 +197,7 @@ class ProjectsController extends BaseController
 
         // Busca os arquivos do projeto
         $fileModel = new ProjectFileModel();
-        $files = $fileModel->select('project_files.*, users.name as uploader_name')
+        $project_files = $fileModel->select('project_files.*, users.name as uploader_name')
                            ->join('users', 'users.id = project_files.user_id')
                            ->where('project_files.project_id', $id)
                            ->orderBy('project_files.created_at', 'DESC')->findAll();
@@ -238,7 +238,7 @@ class ProjectsController extends BaseController
             'users_by_id'     => $usersById,
             'notes_by_task_id' => $notesByTaskId,
             'documents'       => $documents,
-            'files'           => $files,
+            'project_files'   => $project_files,
             'imported_reports' => $imported_reports,
             // Adiciona os tipos de projeto para o modal de IA
             'project_types'   => (new ProjectTypeModel())->findAll(),

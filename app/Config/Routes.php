@@ -52,6 +52,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
         $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
         $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
+        $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');
 
         // Rotas para Relatórios de Projeto
         $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');

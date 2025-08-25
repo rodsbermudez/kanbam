@@ -61,6 +61,40 @@ class ProjectFilesController extends BaseController
     }
 
     /**
+     * Processa a criação de um novo link para um projeto.
+     */
+    public function createLink($projectId)
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'title' => 'required|max_length[255]',
+            'url'   => 'required|valid_url_strict|max_length[2048]',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->to('/admin/projects/' . $projectId . '?active_tab=files')
+                             ->withInput()->with('errors', $validation->getErrors());
+        }
+
+        $fileModel = new ProjectFileModel();
+        $data = [
+            'project_id'       => $projectId,
+            'user_id'          => session()->get('user_id'),
+            'title'            => $this->request->getPost('title'),
+            'description'      => $this->request->getPost('description'),
+            'item_type'        => 'link',
+            'external_url'     => $this->request->getPost('url'),
+        ];
+
+        if ($fileModel->save($data)) {
+            return redirect()->to('/admin/projects/' . $projectId . '?active_tab=files')
+                             ->with('success', 'Link adicionado com sucesso.');
+        }
+
+        return redirect()->to('/admin/projects/' . $projectId . '?active_tab=files')
+                         ->with('error', 'Ocorreu um erro ao adicionar o link.');
+    }
+    /**
      * Exibe um arquivo diretamente no navegador, se for um tipo suportado.
      */
     public function view($fileId)
