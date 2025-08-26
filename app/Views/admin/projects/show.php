@@ -1,6 +1,52 @@
 <?= $this->include('partials/header') ?>
 <?= $this->include('partials/navbar') ?>
 
+<style>
+/* Estilos para o Cronograma Semanal */
+.month-header {
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: var(--bs-primary);
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+}
+.month-header:first-of-type {
+    margin-top: 0;
+}
+.week-card {
+    margin-bottom: 1.5rem;
+}
+.week-card .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+.week-card .task-info {
+    flex-grow: 1;
+}
+.week-card .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 150px; /* Alinha os avatares e datas */
+    justify-content: flex-end;
+}
+.task-entry {
+    display: block;
+    padding: 0.2rem 0.4rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--bs-primary-bg-subtle);
+    border-left: 3px solid var(--bs-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+
 <main class="container-fluid mt-6 px-4">
 
     <!-- Cabeçalho e Ações -->
@@ -85,6 +131,9 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'reports' ? 'active' : '' ?>" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-tab-pane" type="button" role="tab" aria-controls="reports-tab-pane" aria-selected="<?= $active_tab === 'reports' ? 'true' : 'false' ?>">Relatórios</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link <?= $active_tab === 'timeline' ? 'active' : '' ?>" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-tab-pane" type="button" role="tab" aria-controls="timeline-tab-pane" aria-selected="<?= $active_tab === 'timeline' ? 'true' : 'false' ?>">Cronograma</button>
         </li>
         <?php endif; ?>
     </ul>
@@ -366,6 +415,46 @@
             <?php endif; ?>
         </div>
 
+        <!-- Aba Cronograma -->
+        <div class="tab-pane fade content-constrained <?= $active_tab === 'timeline' ? 'show active' : '' ?>" id="timeline-tab-pane" role="tabpanel" aria-labelledby="timeline-tab" tabindex="0">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Cronograma Semanal de Entregas</h2>
+            </div>
+            <p class="text-muted">Visão geral das tarefas do projeto agrupadas por semana de entrega.</p>
+
+            <?php if (empty($weekly_schedule)): ?>
+                <div class="alert alert-info mt-4">Nenhuma tarefa com data de entrega para exibir no cronograma.</div>
+            <?php else: ?>
+                <?php foreach ($weekly_schedule as $month): ?>
+                    <h3 class="month-header"><?= esc($month['label']) ?></h3>
+                    <?php foreach ($month['weeks'] as $week): ?>
+                        <div class="card week-card">
+                            <div class="card-header">
+                                <strong><?= esc($week['label']) ?></strong>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <?php foreach ($week['items'] as $task): ?>
+                                    <li class="list-group-item clickable-task" data-task-id="<?= $task->id ?>">
+                                        <div class="task-info">
+                                            <strong class="d-block"><?= esc($task->title) ?></strong>
+                                            <small class="text-muted"><?= esc(character_limiter($task->description, 100)) ?></small>
+                                        </div>
+                                        <div class="task-meta">
+                                            <span class="badge bg-secondary"><?= date('d/m/Y', strtotime($task->due_date)) ?></span>
+                                            <?php if (!empty($task->user_id) && isset($users_by_id[$task->user_id])): ?>
+                                                <div title="Atribuído a <?= esc($users_by_id[$task->user_id]->name) ?>">
+                                                    <?= user_icon($users_by_id[$task->user_id], 24) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
         <!-- Aba Membros -->
         <?php if (session()->get('is_admin')): ?>
         <div class="tab-pane fade content-constrained <?= $active_tab === 'members' ? 'show active' : '' ?>" id="members-tab-pane" role="tabpanel" aria-labelledby="members-tab" tabindex="0">
@@ -842,6 +931,37 @@
 <script src="https://cdn.tiny.cloud/1/q9ozbuo864vsu5yzdpyz9t3kpdfz4pqhum364ther9lt1iu8/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
 <script>
+/**
+ * Busca os dados de uma tarefa e abre o modal de edição.
+ * @param {string} taskId O ID da tarefa.
+ */
+function openEditTaskModal(taskId) {
+    const editTaskModal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+    const editTaskForm = document.getElementById('editTaskForm');
+
+    fetch(`<?= site_url('admin/tasks/') ?>${taskId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const task = data.task;
+            editTaskForm.action = `<?= site_url('admin/tasks/') ?>${task.id}/update`;
+            document.getElementById('edit_title').value = task.title;
+            document.getElementById('edit_description').value = task.description || '';
+            document.getElementById('edit_status').value = task.status;
+            document.getElementById('edit_user_id').value = task.user_id || '';
+            document.getElementById('edit_due_date').value = task.due_date || '';
+            editTaskModal.show();
+        } else {
+            showToast(data.message || 'Tarefa não encontrada.', 'danger');
+        }
+    }).catch(err => showToast('Erro ao buscar dados da tarefa.', 'danger'));
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('kanban-container');
     const scrollLeftBtn = document.getElementById('kanban-scroll-left');
@@ -1129,35 +1249,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (editBtn) {
                 e.preventDefault();
                 const taskId = editBtn.dataset.taskId;
-                
-                // Fetch task data
-                fetch(`<?= site_url('admin/tasks/') ?>${taskId}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const task = data.task;
-                        // Popula o modal de edição
-                        editTaskForm.action = `<?= site_url('admin/tasks/') ?>${task.id}/update`;
-                        document.getElementById('edit_title').value = task.title;
-                        document.getElementById('edit_description').value = task.description || '';
-                        document.getElementById('edit_status').value = task.status;
-                        document.getElementById('edit_user_id').value = task.user_id || '';
-                        document.getElementById('edit_due_date').value = task.due_date || '';
-                        
-                        editTaskModal.show();
-                    } else {
-                        showToast(data.message || 'Tarefa não encontrada.', 'danger');
-                    }
-                })
-                .catch(err => {
-                    console.error('Fetch Error:', err);
-                    showToast('Erro ao buscar dados da tarefa.', 'danger');
-                });
+                // Chama a função reutilizável para abrir o modal
+                openEditTaskModal(taskId);
             }
 
             if (deleteBtn) {
@@ -1195,6 +1288,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 deleteNoteModal.show();
+            }
+        });
+    }
+
+    // --- Lógica para Clicar nas Tarefas do Cronograma Semanal ---
+    const timelineTabPane = document.getElementById('timeline-tab-pane');
+    if (timelineTabPane) {
+        timelineTabPane.addEventListener('click', function(e) {
+            const taskItem = e.target.closest('.clickable-task');
+            if (taskItem && taskItem.dataset.taskId) {
+                openEditTaskModal(taskItem.dataset.taskId);
             }
         });
     }
@@ -1642,6 +1746,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // --- Lógica para o Gráfico de Gantt (Tooltips) ---
+    const ganttTooltips = document.querySelectorAll('#timeline-tab-pane [data-bs-toggle="tooltip"]');
+    if (ganttTooltips.length > 0) {
+        [...ganttTooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+
 });
 </script>
 

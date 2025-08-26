@@ -151,6 +151,14 @@ class ProjectsController extends BaseController
             }
         }
 
+        $assigned_users = $userModel->getUsersForProject($id);
+
+        // Cria um mapa de usuários por ID para fácil acesso na view
+        $usersById = [];
+        foreach ($assigned_users as $user) {
+            $usersById[$user->id] = $user;
+        }
+
         $taskModel = new TaskModel();
 
         $statuses = [
@@ -178,7 +186,14 @@ class ProjectsController extends BaseController
         // Busca todas as notas de uma vez para otimizar as queries
         $taskIds = array_map(fn($task) => $task->id, $tasks);
         $noteModel = new TaskNoteModel();
-        $allNotes = $noteModel->getNotesForProjectTasks($taskIds);
+        $allNotes = [];
+        if (!empty($taskIds)) {
+            $allNotes = $noteModel->select('task_notes.*, users.name')
+                                  ->join('users', 'users.id = task_notes.user_id', 'left')
+                                  ->whereIn('task_id', $taskIds)
+                                  ->orderBy('task_notes.created_at', 'ASC')
+                                  ->findAll();
+        }
 
         // Agrupa as notas por ID da tarefa
         $notesByTaskId = [];
@@ -186,14 +201,40 @@ class ProjectsController extends BaseController
             $notesByTaskId[$note->task_id][] = $note;
         }
 
-        // Pega a aba ativa da sessão ou da URL (URL tem prioridade)
-        // E o documento a ser selecionado
-        $activeTab = $this->request->getGet('active_tab') ?? session()->get('active_tab') ?? 'board';
-        $selectDocId = $this->request->getGet('select_doc') ?? null;
+        // --- Lógica para o Cronograma Semanal ---
+        $weekly_tasks = array_filter($tasks, fn($task) => !empty($task->due_date));
 
-        // Busca os documentos do projeto
-        $docModel = new ProjectDocumentModel();
-        $documents = $docModel->where('project_id', $id)->orderBy('title', 'ASC')->findAll();
+        $weekly_schedule = [];
+        if (!empty($weekly_tasks)) {
+            $month_formatter = new \IntlDateFormatter('pt_BR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, null, 'MMMM \'de\' yyyy');
+
+            foreach ($weekly_tasks as $task) {
+                $date = new \DateTime($task->due_date);
+                
+                // Chave e rótulo do mês
+                $month_key = $date->format('Y-m');
+                $month_label = ucfirst($month_formatter->format($date));
+
+                // Calcula o início (Segunda) e fim (Domingo) da semana
+                $day_of_week = (int)$date->format('N'); // 1 (Seg) a 7 (Dom)
+                $start_of_week = (clone $date)->modify('-' . ($day_of_week - 1) . ' days');
+                $end_of_week = (clone $start_of_week)->modify('+6 days');
+                
+                // Chave e rótulo da semana
+                $week_key = $start_of_week->format('Y-m-d');
+                $week_label = "Semana de " . $start_of_week->format('d/m') . " a " . $end_of_week->format('d/m');
+
+                // Agrupa os dados
+                if (!isset($weekly_schedule[$month_key])) {
+                    $weekly_schedule[$month_key] = ['label' => $month_label, 'weeks' => []];
+                }
+                if (!isset($weekly_schedule[$month_key]['weeks'][$week_key])) {
+                    $weekly_schedule[$month_key]['weeks'][$week_key] = ['label' => $week_label, 'items' => []];
+                }
+                $weekly_schedule[$month_key]['weeks'][$week_key]['items'][] = $task;
+            }
+        }
+        // --- Fim da Lógica para o Cronograma Semanal ---
 
         // Busca os arquivos do projeto
         $fileModel = new ProjectFileModel();
@@ -209,6 +250,15 @@ class ProjectsController extends BaseController
                                                 ->where('imported_reports.project_id', $id)
                                                 ->orderBy('imported_reports.original_created_at', 'DESC')->findAll();
 
+        // Pega a aba ativa da sessão ou da URL (URL tem prioridade)
+        // E o documento a ser selecionado
+        $activeTab = $this->request->getGet('active_tab') ?? session()->get('active_tab') ?? 'board';
+        $selectDocId = $this->request->getGet('select_doc') ?? null;
+
+        // Busca os documentos do projeto
+        $docModel = new ProjectDocumentModel();
+        $documents = $docModel->where('project_id', $id)->orderBy('title', 'ASC')->findAll();
+
         // Agrupa as tarefas por status para o quadro Kanban
         $groupedTasks = [];
         foreach ($statuses as $status) {
@@ -218,14 +268,6 @@ class ProjectsController extends BaseController
             if (array_key_exists($task->status, $groupedTasks)) {
                 $groupedTasks[$task->status][] = $task;
             }
-        }
-
-        $assigned_users = $userModel->getUsersForProject($id);
-
-        // Cria um mapa de usuários por ID para fácil acesso na view
-        $usersById = [];
-        foreach ($assigned_users as $user) {
-            $usersById[$user->id] = $user;
         }
 
         $data = [
@@ -239,6 +281,7 @@ class ProjectsController extends BaseController
             'notes_by_task_id' => $notesByTaskId,
             'documents'       => $documents,
             'project_files'   => $project_files,
+            'weekly_schedule' => $weekly_schedule,
             'imported_reports' => $imported_reports,
             // Adiciona os tipos de projeto para o modal de IA
             'project_types'   => (new ProjectTypeModel())->findAll(),
