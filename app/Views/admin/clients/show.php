@@ -95,8 +95,69 @@
                     <?php endif; ?>
                 </div>
             </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Acesso ao Portal do Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <?php if ($access): ?>
+                        <p>O acesso para este cliente está <strong>habilitado</strong>.</p>
+                        <div class="mb-3">
+                            <label class="form-label">Link de Acesso:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" value="<?= site_url('portal/' . $access->token) ?>" readonly id="accessLink">
+                                <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn"><i class="bi bi-clipboard"></i></button>
+                            </div>
+                        </div>
+                        
+                        <?php if (session()->has('generated_password')): ?>
+                            <div class="alert alert-success">
+                                <strong>Nova Senha Gerada:</strong>
+                                <div class="input-group mt-2">
+                                    <input type="text" class="form-control" value="<?= esc(session('generated_password')) ?>" readonly id="accessPassword">
+                                    <button class="btn btn-outline-secondary" type="button" id="copyPasswordBtn"><i class="bi bi-clipboard"></i></button>
+                                </div>
+                                <small class="d-block mt-2">Anote esta senha. Ela não será exibida novamente.</small>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="<?= site_url('admin/clients/access/' . $access->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-warning w-100">Gerar Nova Senha</button>
+                        </form>
+                    <?php else: ?>
+                        <p>O cliente ainda não tem acesso ao portal.</p>
+                        <form action="<?= site_url('admin/clients/' . $client->id . '/enable-access') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-success w-100">Habilitar Acesso e Gerar Senha</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function copyToClipboard(elementId, buttonId) {
+        const input = document.getElementById(elementId);
+        const button = document.getElementById(buttonId);
+        if (!input || !button) return;
+
+        button.addEventListener('click', function() {
+            navigator.clipboard.writeText(input.value).then(function() {
+                const originalHtml = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check-lg"></i>';
+                setTimeout(() => { button.innerHTML = originalHtml; }, 2000);
+            });
+        });
+    }
+
+    copyToClipboard('accessLink', 'copyLinkBtn');
+    copyToClipboard('accessPassword', 'copyPasswordBtn');
+});
+</script>
 
 <?= $this->include('partials/footer') ?>

@@ -5,8 +5,20 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-// Rota principal redireciona para a página de login
-$routes->get('/', static fn () => redirect()->to('login'));
+
+// --- Rotas do Portal do Cliente ---
+// A rota de login agora usa uma expressão regular para garantir que o token seja uma string hexadecimal de 64 caracteres,
+// evitando conflito com outras rotas como 'portal/dashboard'.
+$routes->get('portal/([a-f0-9]{64})', 'ClientPortalController::loginForm/$1');
+$routes->post('portal/([a-f0-9]{64})/login', 'ClientPortalController::attemptLogin/$1');
+$routes->get('portal/logout', 'ClientPortalController::logout');
+$routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) {
+    $routes->get('dashboard', 'ClientPortalController::dashboard');
+    $routes->get('dashboard/(:num)', 'ClientPortalController::dashboard/$1');
+});
+
+// --- Rotas de Autenticação (Admin/Equipe) ---
+$routes->get('/', static fn () => redirect()->to('login')); // Rota principal redireciona para a página de login
 
 // Rotas de Autenticação (públicas)
 $routes->get('login', 'AuthController::login', ['as' => 'login']);
@@ -40,6 +52,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         // Gerenciamento de Clientes
         $routes->resource('clients', ['controller' => 'Admin\ClientsController']);
         $routes->get('clients/(:num)/delete', 'Admin\ClientsController::delete/$1');
+        $routes->post('clients/(:num)/enable-access', 'Admin\ClientsController::enableAccess/$1');
+        $routes->post('clients/access/(:num)/regenerate-password', 'Admin\ClientsController::regeneratePassword/$1');
 
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
         $routes->resource('projects', ['controller' => 'Admin\ProjectsController', 'except' => ['index', 'show']]);

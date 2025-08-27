@@ -27,21 +27,22 @@
                 <?php endif; ?>
             </ul>
 
-            <div class="d-flex align-items-center ms-auto me-3">
+            <div class="d-flex align-items-center ms-auto">
                 <!-- Global Project Search -->
-                <div class="me-3" style="width: 250px;">
+                <div class="me-3" style="width: 500px;">
                     <select id="globalProjectSearch" placeholder="Buscar projeto..."></select>
                 </div>
-
-                <!-- Due Tasks Sidebar Trigger -->
-                <button class="btn btn-outline-secondary position-relative" type="button" id="open-due-tasks-sidebar" title="Tarefas Próximas">
-                    <i class="bi bi-bell"></i>
-                    <span id="due-tasks-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
-                        <!-- Count will be inserted here by JS -->
-                    </span>
-                </button>
             </div>
-            <ul class="navbar-nav">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item">
+                    <!-- Due Tasks Sidebar Trigger -->
+                    <button class="nav-link position-relative" type="button" id="open-due-tasks-sidebar" title="Tarefas Próximas" style="background: transparent; border: none;">
+                        <i class="bi bi-bell"></i>
+                        <span id="due-tasks-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                            <!-- Count will be inserted here by JS -->
+                        </span>
+                    </button>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i> <?= esc(session()->get('user_name')) ?>

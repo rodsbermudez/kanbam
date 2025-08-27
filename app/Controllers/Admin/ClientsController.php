@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\ClientModel;
 use App\Models\ProjectModel;
 use App\Models\TaskModel;
+use App\Models\ClientAccessModel;
 
 class ClientsController extends BaseController
 {
@@ -55,12 +56,14 @@ class ClientsController extends BaseController
         $clientModel = new ClientModel();
         $projectModel = new ProjectModel();
         $taskModel = new TaskModel();
+        $clientAccessModel = new ClientAccessModel();
 
         $client = $clientModel->find($id);
 
         if (!$client) {
             return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
         }
+        $access = $clientAccessModel->where('client_id', $id)->first();
 
         $data = [
             'title'          => 'Detalhes do Cliente: ' . esc($client->name),
@@ -68,6 +71,7 @@ class ClientsController extends BaseController
             'projects'       => $projectModel->getProjectsForClient($id),
             'upcoming_tasks' => $taskModel->getUpcomingTasksForClient($id),
             'overdue_tasks'  => $taskModel->getOverdueTasksForClient($id),
+            'access'         => $access,
         ];
 
         return view('admin/clients/show', $data);
@@ -123,5 +127,45 @@ class ClientsController extends BaseController
         }
 
         return redirect()->to('/admin/clients')->with('error', 'Erro ao remover o cliente.');
+    }
+
+    /**
+     * Habilita o acesso do cliente e gera uma senha.
+     */
+    public function enableAccess($clientId)
+    {
+        $clientAccessModel = new ClientAccessModel();
+
+        // Gera um token único e uma senha aleatória
+        $token = bin2hex(random_bytes(32));
+        $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'), 0, 12);
+
+        $data = [
+            'client_id' => $clientId,
+            'token'     => $token,
+            'password'  => $password, // O model fará o hash
+        ];
+
+        if ($clientAccessModel->save($data)) {
+            // Guarda a senha em texto plano na sessão para exibir ao admin uma única vez
+            session()->setFlashdata('generated_password', $password);
+            return redirect()->to('/admin/clients/' . $clientId)->with('success', 'Acesso do cliente habilitado com sucesso!');
+        }
+
+        return redirect()->to('/admin/clients/' . $clientId)->with('error', 'Erro ao habilitar o acesso.');
+    }
+
+    /**
+     * Gera uma nova senha para um acesso de cliente existente.
+     */
+    public function regeneratePassword($accessId)
+    {
+        $clientAccessModel = new ClientAccessModel();
+        $access = $clientAccessModel->find($accessId);
+        $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'), 0, 12);
+
+        $clientAccessModel->update($accessId, ['password' => $password]);
+        session()->setFlashdata('generated_password', $password);
+        return redirect()->to('/admin/clients/' . $access->client_id)->with('success', 'Nova senha gerada com sucesso!');
     }
 }
