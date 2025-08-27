@@ -87,10 +87,12 @@ class ClientPortalController extends BaseController
         }
 
         // Lógica do Cronograma Semanal (reutilizada)
+        // Busca apenas as tarefas com data de entrega para o cronograma, incluindo as concluídas.
         $taskModel = new TaskModel();
-        $tasks = $taskModel->where('project_id', $selectedProjectId)->orderBy('due_date', 'ASC')->findAll();
-        
-        $weekly_tasks = array_filter($tasks, fn($task) => !empty($task->due_date));
+        $weekly_tasks = $taskModel->where('project_id', $selectedProjectId)
+                                  ->where('due_date IS NOT NULL')
+                                  ->orderBy('due_date', 'ASC')
+                                  ->findAll();
         $weekly_schedule = [];
         if (!empty($weekly_tasks)) {
             $month_formatter = new \IntlDateFormatter('pt_BR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, null, 'MMMM \'de\' yyyy');

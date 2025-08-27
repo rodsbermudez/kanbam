@@ -202,7 +202,15 @@ class ProjectsController extends BaseController
         }
 
         // --- Lógica para o Cronograma Semanal ---
-        $weekly_tasks = array_filter($tasks, fn($task) => !empty($task->due_date));
+        // Garante que todas as tarefas, incluindo as concluídas, sejam consideradas para o cronograma.
+        $weekly_tasks = [];
+        foreach ($tasks as $task) {
+            if (!empty($task->due_date)) {
+                $weekly_tasks[] = $task;
+            }
+        }
+        // Reordena por data, pois o array original pode ter tarefas sem data no início
+        usort($weekly_tasks, fn($a, $b) => strcmp($a->due_date, $b->due_date));
 
         $weekly_schedule = [];
         if (!empty($weekly_tasks)) {
