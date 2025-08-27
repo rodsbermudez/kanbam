@@ -234,6 +234,12 @@ class ProjectsController extends BaseController
                 $weekly_schedule[$month_key]['weeks'][$week_key]['items'][] = $task;
             }
         }
+
+        // Determina a chave da semana atual para destacar na view
+        $today = new \DateTime();
+        $day_of_week_today = (int)$today->format('N'); // 1 (Seg) a 7 (Dom)
+        $start_of_current_week = (clone $today)->modify('-' . ($day_of_week_today - 1) . ' days');
+        $current_week_key = $start_of_current_week->format('Y-m-d');
         // --- Fim da Lógica para o Cronograma Semanal ---
 
         // Busca os arquivos do projeto
@@ -282,6 +288,7 @@ class ProjectsController extends BaseController
             'documents'       => $documents,
             'project_files'   => $project_files,
             'weekly_schedule' => $weekly_schedule,
+            'current_week_key' => $current_week_key,
             'imported_reports' => $imported_reports,
             // Adiciona os tipos de projeto para o modal de IA
             'project_types'   => (new ProjectTypeModel())->findAll(),

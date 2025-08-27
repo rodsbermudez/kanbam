@@ -1,51 +1,52 @@
-<!-- app/Views/partials/navbar.php -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="<?= site_url('dashboard') ?>">Kanban</a>
+        <a class="navbar-brand" href="<?= site_url('admin/dashboard') ?>">
+            <img src="<?= base_url('logo-patropi.svg') ?>" alt="Patropi" style="height: 30px;">
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= site_url('dashboard') ?>">Dashboard</a>
+                    <a class="nav-link" href="<?= site_url('admin/dashboard') ?>">Dashboard</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Projetos
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= site_url('admin/projects') ?>">Gerenciar Projetos</a></li>
-                        <?php if (session()->get('is_admin')): ?>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="<?= site_url('admin/project-type') ?>">Tipos de Projeto (IA)</a></li>
-                        <?php endif; ?>
-                    </ul>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('admin/projects') ?>">Projetos</a>
                 </li>
                 <?php if (session()->get('is_admin')): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('admin/clients') ?>">Clientes</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('admin/users') ?>">Usuários</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= site_url('admin/clients') ?>">Clientes</a>
+                    <a class="nav-link" href="<?= site_url('admin/project-type') ?>">Tipos de Projeto</a>
                 </li>
                 <?php endif; ?>
             </ul>
+
+            <div class="d-flex align-items-center ms-auto me-3">
+                <!-- Global Project Search -->
+                <div class="me-3" style="width: 250px;">
+                    <select id="globalProjectSearch" placeholder="Buscar projeto..."></select>
+                </div>
+
+                <!-- Due Tasks Sidebar Trigger -->
+                <button class="btn btn-outline-secondary position-relative" type="button" id="open-due-tasks-sidebar" title="Tarefas Próximas">
+                    <i class="bi bi-bell"></i>
+                    <span id="due-tasks-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                        <!-- Count will be inserted here by JS -->
+                    </span>
+                </button>
+            </div>
             <ul class="navbar-nav">
-                <li class="nav-item d-flex align-items-center">
-                    <select id="globalProjectSearch" placeholder="Buscar projeto..." style="width: 250px;"></select>
-                </li>
-                <li class="nav-item position-relative ms-2">
-                    <a class="nav-link" href="#" id="open-due-tasks-sidebar" title="Tarefas Atrasadas e Próximas">
-                        <i class="bi bi-calendar-check fs-5"></i>
-                        <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle d-none" id="due-tasks-count" style="font-size: 0.6em; margin-top: 0.5rem;"></span>
-                    </a>
-                </li>
-                <li class="nav-item dropdown ms-2">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i> <?= esc(session()->get('user_name')) ?>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="<?= site_url('logout') ?>">Sair</a></li>
                     </ul>
                 </li>

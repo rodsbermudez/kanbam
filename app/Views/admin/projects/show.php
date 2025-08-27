@@ -24,6 +24,22 @@
     align-items: center;
     cursor: pointer;
 }
+.current-week-highlight {
+    border-color: var(--bs-primary);
+    border-width: 2px;
+}
+.current-week-highlight .card-header {
+    background-color: var(--bs-primary-bg-subtle);
+    font-weight: bold;
+}
+.week-card .task-info {
+    flex-grow: 1;
+}
+.week-card .task-meta {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
 .week-card .task-info {
     flex-grow: 1;
 }
@@ -427,20 +443,36 @@
             <?php else: ?>
                 <?php foreach ($weekly_schedule as $month): ?>
                     <h3 class="month-header"><?= esc($month['label']) ?></h3>
-                    <?php foreach ($month['weeks'] as $week): ?>
-                        <div class="card week-card">
+                    <?php foreach ($month['weeks'] as $week_key => $week): ?>
+                        <?php
+                            $is_current_week = (isset($current_week_key) && $week_key === $current_week_key) ? 'current-week-highlight' : '';
+                        ?>
+                        <div class="card week-card <?= $is_current_week ?>">
                             <div class="card-header">
                                 <strong><?= esc($week['label']) ?></strong>
                             </div>
                             <ul class="list-group list-group-flush">
                                 <?php foreach ($week['items'] as $task): ?>
+                                    <?php
+                                        // Mapeamento de status para cores de badge
+                                        $status_colors = [
+                                            'concluída'         => 'bg-success',
+                                            'cancelada'         => 'bg-danger',
+                                            'em desenvovimento' => 'bg-primary',
+                                            'ajustes'           => 'bg-warning text-dark',
+                                            'aprovação'         => 'bg-info text-dark',
+                                            'não iniciadas'     => 'bg-light text-dark',
+                                            'default'           => 'bg-secondary'
+                                        ];
+                                        $status_class = $status_colors[$task->status] ?? $status_colors['default'];
+                                    ?>
                                     <li class="list-group-item clickable-task" data-task-id="<?= $task->id ?>">
                                         <div class="task-info">
                                             <strong class="d-block"><?= esc($task->title) ?></strong>
                                             <small class="text-muted"><?= esc(character_limiter($task->description, 100)) ?></small>
                                         </div>
                                         <div class="task-meta">
-                                            <span class="badge bg-secondary"><?= date('d/m/Y', strtotime($task->due_date)) ?></span>
+                                            <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
                                             <?php if (!empty($task->user_id) && isset($users_by_id[$task->user_id])): ?>
                                                 <div title="Atribuído a <?= esc($users_by_id[$task->user_id]->name) ?>">
                                                     <?= user_icon($users_by_id[$task->user_id], 24) ?>
