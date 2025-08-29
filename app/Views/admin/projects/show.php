@@ -349,6 +349,7 @@
                                 <th class="text-center">Tipo</th>
                                 <th class="text-center">Tamanho</th>
                                 <th>Enviado por</th>
+                                <th class="text-center" style="width: 150px;">Visível ao Cliente</th>
                                 <th>Data</th>
                                 <th style="width: 180px;">Ações</th>
                             </tr>
@@ -383,6 +384,12 @@
                                     <?php endif; ?>
                                 </td>
                                 <td class="align-middle"><?= esc($item->uploader_name) ?></td>
+                                <td class="text-center align-middle">
+                                    <div class="form-check form-switch d-flex justify-content-center">
+                                        <input class="form-check-input file-visibility-toggle" type="checkbox" role="switch" 
+                                               data-file-id="<?= $item->id ?>" <?= isset($item->is_visible_to_client) && $item->is_visible_to_client ? 'checked' : '' ?>>
+                                    </div>
+                                </td>
                                 <td class="align-middle"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
                                 <td class="align-middle">
                                     <?php if ($item->item_type === 'file'): ?>
@@ -1841,6 +1848,37 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+
+    // --- Lógica para o Toggle de Visibilidade de Arquivos ---
+    const fileVisibilityToggles = document.querySelectorAll('.file-visibility-toggle');
+    fileVisibilityToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const fileId = this.dataset.fileId;
+            const isVisible = this.checked;
+
+            fetch(`<?= site_url('admin/files/') ?>${fileId}/toggle-client-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const message = data.new_visibility ? 'Arquivo agora está visível para o cliente.' : 'Arquivo agora está oculto para o cliente.';
+                    showToast(message, 'success');
+                } else {
+                    this.checked = !isVisible; // Reverte em caso de erro
+                    showToast(data.message || 'Erro ao alterar a visibilidade do arquivo.', 'danger');
+                }
+            }).catch(err => {
+                this.checked = !isVisible;
+                showToast('Erro de comunicação. Tente novamente.', 'danger');
+            });
+        });
+    });
 });
 </script>
 

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\ClientAccessModel;
 use App\Models\ProjectModel;
 use App\Models\TaskModel;
+use App\Models\ProjectFileModel;
 use App\Models\ClientModel;
 
 class ClientPortalController extends BaseController
@@ -76,6 +77,7 @@ class ClientPortalController extends BaseController
                 'projects' => [],
                 'selected_project' => null,
                 'weekly_schedule' => [],
+                'visible_files' => [],
             ]);
         }
 
@@ -89,6 +91,13 @@ class ClientPortalController extends BaseController
         if (!$selectedProject || $selectedProject->client_id != $clientId || !$selectedProject->is_visible_to_client) {
             return redirect()->to('/portal/dashboard')->with('error', 'Projeto inválido ou não acessível.');
         }
+
+        // Busca os arquivos visíveis para o cliente
+        $fileModel = new ProjectFileModel();
+        $visible_files = $fileModel->where('project_id', $selectedProjectId)
+                                   ->where('is_visible_to_client', 1)
+                                   ->orderBy('title', 'ASC')
+                                   ->findAll();
 
         // Lógica do Cronograma Semanal (reutilizada)
         // Busca apenas as tarefas com data de entrega para o cronograma, incluindo as concluídas.
@@ -129,6 +138,7 @@ class ClientPortalController extends BaseController
             'selected_project' => $selectedProject,
             'weekly_schedule'  => $weekly_schedule,
             'current_week_key' => $current_week_key,
+            'visible_files'    => $visible_files,
         ];
 
         return view('client_portal/dashboard', $data);
@@ -139,5 +149,44 @@ class ClientPortalController extends BaseController
         $token = session()->get('client_portal_token');
         session()->destroy();
         return redirect()->to('/portal/' . $token)->with('success', 'Você saiu com segurança.');
+    }
+
+    /**
+     * Permite que o cliente baixe um arquivo visível.
+     */
+    public function downloadFile($fileId)
+    {
+        $clientId = session()->get('client_portal_client_id');
+        $fileModel = new ProjectFileModel();
+        $file = $fileModel->find($fileId);
+
+        // Validação de segurança:
+        // 1. O arquivo existe?
+        // 2. O arquivo está visível para o cliente?
+        // 3. O projeto do arquivo pertence ao cliente logado?
+        if (!$file || !$file->is_visible_to_client) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Arquivo não encontrado ou não acessível.');
+        }
+
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($file->project_id);
+
+        if (!$project || $project->client_id != $clientId) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Acesso negado a este arquivo.');
+        }
+
+        // Se for um link, redireciona para a URL externa
+        if ($file->item_type === 'link') {
+            return redirect()->to($file->external_url);
+        }
+
+        // Se for um arquivo, força o download
+        $path = WRITEPATH . 'uploads/project_files/' . $file->stored_file_name;
+
+        if (!file_exists($path)) {
+             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Arquivo físico não encontrado no servidor.');
+        }
+
+        return $this->response->download($path, null)->setFileName($file->file_name);
     }
 }

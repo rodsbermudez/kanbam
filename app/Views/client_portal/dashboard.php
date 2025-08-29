@@ -82,38 +82,70 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Cronograma: <?= esc($selected_project->name) ?></h2>
         </div>
-        <p class="text-muted">Visão geral das tarefas do projeto agrupadas por semana de entrega.</p>
 
-        <?php if (empty($weekly_schedule)): ?>
-            <div class="alert alert-info mt-4">Nenhuma tarefa com data de entrega para exibir no cronograma.</div>
-        <?php else: ?>
-            <?php foreach ($weekly_schedule as $month): ?>
-                <h3 class="month-header"><?= esc($month['label']) ?></h3>
-                <?php foreach ($month['weeks'] as $week_key => $week): ?>
-                    <?php $is_current_week = (isset($current_week_key) && $week_key === $current_week_key) ? 'current-week-highlight' : ''; ?>
-                    <div class="card week-card <?= $is_current_week ?>">
-                        <div class="card-header"><strong><?= esc($week['label']) ?></strong></div>
-                        <ul class="list-group list-group-flush">
-                            <?php foreach ($week['items'] as $task): ?>
-                                <?php
-                                    $status_colors = ['concluída' => 'bg-success', 'cancelada' => 'bg-danger', 'em desenvovimento' => 'bg-primary', 'ajustes' => 'bg-warning text-dark', 'aprovação' => 'bg-info text-dark', 'não iniciadas' => 'bg-light text-dark', 'default' => 'bg-secondary'];
-                                    $status_class = $status_colors[$task->status] ?? $status_colors['default'];
-                                ?>
-                                <li class="list-group-item">
-                                    <div class="task-info">
-                                        <strong class="d-block"><?= esc($task->title) ?></strong>
-                                        <small class="text-muted"><?= esc($task->description) ?></small>
+        <div class="row g-4">
+            <!-- Coluna do Cronograma -->
+            <div class="col-lg-8">
+                <p class="text-muted">Visão geral das tarefas do projeto agrupadas por semana de entrega.</p>
+
+                <?php if (empty($weekly_schedule)): ?>
+                    <div class="alert alert-info mt-4">Nenhuma tarefa com data de entrega para exibir no cronograma.</div>
+                <?php else: ?>
+                    <?php foreach ($weekly_schedule as $month): ?>
+                        <h3 class="month-header"><?= esc($month['label']) ?></h3>
+                        <?php foreach ($month['weeks'] as $week_key => $week): ?>
+                            <?php $is_current_week = (isset($current_week_key) && $week_key === $current_week_key) ? 'current-week-highlight' : ''; ?>
+                            <div class="card week-card <?= $is_current_week ?>">
+                                <div class="card-header"><strong><?= esc($week['label']) ?></strong></div>
+                                <ul class="list-group list-group-flush">
+                                    <?php foreach ($week['items'] as $task): ?>
+                                        <?php
+                                            $status_colors = ['concluída' => 'bg-success', 'cancelada' => 'bg-danger', 'em desenvovimento' => 'bg-primary', 'ajustes' => 'bg-warning text-dark', 'aprovação' => 'bg-info text-dark', 'não iniciadas' => 'bg-light text-dark', 'default' => 'bg-secondary'];
+                                            $status_class = $status_colors[$task->status] ?? $status_colors['default'];
+                                        ?>
+                                        <li class="list-group-item">
+                                            <div class="task-info">
+                                                <strong class="d-block"><?= esc($task->title) ?></strong>
+                                                <small class="text-muted"><?= esc($task->description) ?></small>
+                                            </div>
+                                            <div class="task-meta">
+                                                <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- Coluna de Arquivos -->
+            <div class="col-lg-4">
+                <div class="card sticky-top" style="top: 2rem;">
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Arquivos Disponíveis</h5></div>
+                    <div class="list-group list-group-flush">
+                        <?php if (empty($visible_files)): ?>
+                            <div class="list-group-item">Nenhum arquivo compartilhado para este projeto.</div>
+                        <?php else: ?>
+                            <?php foreach ($visible_files as $file): ?>
+                                <a href="<?= site_url('portal/files/' . $file->id . '/download') ?>" 
+                                   target="<?= $file->item_type === 'link' ? '_blank' : '_self' ?>" 
+                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="d-block"><?= esc($file->title) ?></strong>
+                                        <?php if ($file->description): ?><small class="text-muted"><?= esc($file->description) ?></small><?php endif; ?>
                                     </div>
-                                    <div class="task-meta">
-                                        <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
+                                    <div class="text-end fs-5">
+                                        <i class="bi <?= $file->item_type === 'link' ? 'bi-box-arrow-up-right' : 'bi-download' ?>"></i>
                                     </div>
-                                </li>
+                                </a>
                             <?php endforeach; ?>
-                        </ul>
+                        <?php endif; ?>
                     </div>
-                <?php endforeach; ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                </div>
+            </div>
+        </div>
     <?php endif; ?>
 </main>
 

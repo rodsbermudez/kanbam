@@ -182,4 +182,25 @@ class ClientsController extends BaseController
         session()->setFlashdata('generated_password', $password);
         return redirect()->to('/admin/clients/' . $access->client_id)->with('success', 'Nova senha gerada com sucesso!');
     }
+
+    /**
+     * Remove o acesso de um cliente ao portal.
+     */
+    public function deleteAccess($accessId)
+    {
+        $clientAccessModel = new ClientAccessModel();
+        $access = $clientAccessModel->find($accessId);
+
+        if (!$access) {
+            return redirect()->back()->with('error', 'Registro de acesso não encontrado.');
+        }
+
+        $clientId = $access->client_id;
+
+        if ($clientAccessModel->delete($accessId, true)) { // true para hard delete
+            return redirect()->to('/admin/clients/' . $clientId)->with('success', 'Acesso do cliente removido com sucesso.');
+        }
+
+        return redirect()->to('/admin/clients/' . $clientId)->with('error', 'Erro ao remover o acesso do cliente.');
+    }
 }

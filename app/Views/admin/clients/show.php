@@ -153,10 +153,16 @@
                             </div>
                         <?php endif; ?>
 
-                        <form action="<?= site_url('admin/clients/access/' . $access->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-warning w-100">Gerar Nova Senha</button>
-                        </form>
+                        <div class="d-grid gap-2">
+                            <form action="<?= site_url('admin/clients/access/' . $access->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-warning w-100">Gerar Nova Senha</button>
+                            </form>
+                            <form action="<?= site_url('admin/clients/access/' . $access->id . '/delete') ?>" method="post" onsubmit="return confirm('Tem certeza que deseja remover permanentemente o acesso deste cliente ao portal?');">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-danger w-100">Remover Acesso</button>
+                            </form>
+                        </div>
                     <?php else: ?>
                         <p>O cliente ainda não tem acesso ao portal.</p>
                         <form action="<?= site_url('admin/clients/' . $client->id . '/enable-access') ?>" method="post">

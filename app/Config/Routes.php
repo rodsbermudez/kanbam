@@ -15,6 +15,7 @@ $routes->get('portal/logout', 'ClientPortalController::logout');
 $routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) {
     $routes->get('dashboard', 'ClientPortalController::dashboard');
     $routes->get('dashboard/(:num)', 'ClientPortalController::dashboard/$1');
+    $routes->get('files/(:num)/download', 'ClientPortalController::downloadFile/$1');
 });
 
 // --- Rotas de Autenticação (Admin/Equipe) ---
@@ -54,6 +55,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('clients/(:num)/delete', 'Admin\ClientsController::delete/$1');
         $routes->post('clients/(:num)/enable-access', 'Admin\ClientsController::enableAccess/$1');
         $routes->post('clients/access/(:num)/regenerate-password', 'Admin\ClientsController::regeneratePassword/$1');
+        $routes->post('clients/access/(:num)/delete', 'Admin\ClientsController::deleteAccess/$1');
 
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
         // Rotas específicas de projeto (devem vir antes do 'resource' para ter prioridade)
@@ -75,6 +77,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
         $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
         $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
+        $routes->post('files/(:num)/toggle-client-visibility', 'Admin\ProjectFilesController::toggleClientVisibility/$1');
 
         // Rotas para Relatórios de Projeto
         $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');

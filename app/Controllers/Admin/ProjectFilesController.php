@@ -163,4 +163,29 @@ class ProjectFilesController extends BaseController
         return redirect()->to('/admin/projects/' . $projectId . '?active_tab=files')
                          ->with('error', 'Erro ao remover o arquivo.');
     }
+
+    /**
+     * Alterna a visibilidade de um arquivo no portal do cliente via AJAX.
+     */
+    public function toggleClientVisibility($fileId)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403, 'Acesso negado.');
+        }
+
+        $fileModel = new ProjectFileModel();
+        $file = $fileModel->find($fileId);
+
+        if (!$file) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'message' => 'Arquivo não encontrado.']);
+        }
+
+        $newVisibility = !(bool)($file->is_visible_to_client ?? false);
+
+        if ($fileModel->update($fileId, ['is_visible_to_client' => $newVisibility])) {
+            return $this->response->setJSON(['success' => true, 'new_visibility' => $newVisibility]);
+        }
+
+        return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Erro ao atualizar a visibilidade do arquivo.']);
+    }
 }

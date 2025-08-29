@@ -13,9 +13,8 @@ class ProjectFileModel extends Model
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'project_id', 'user_id', 'title', 'description', 'item_type',
-        'external_url',
-        'file_name', 'stored_file_name', 'file_type', 'file_size'
+        'project_id', 'user_id', 'title', 'description', 'item_type', 'is_visible_to_client',
+        'file_name', 'stored_file_name', 'file_type', 'file_size', 'external_url'
     ];
 
     // Dates
