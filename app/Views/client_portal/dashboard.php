@@ -49,14 +49,13 @@
         background-color: transparent;
         border-color: rgba(255,255,255,0.1);
         color: #adb5bd;
-        padding: .75rem 0;
+        padding: .75rem 0 .75rem 1rem;
         border-radius: 0;
     }
     .project-list .list-group-item.active {
         background-color: var(--bs-primary);
         color: #fff;
         border-color: var(--bs-primary);
-        padding-left: 1rem;
     }
     /* Estilos do cronograma (copiados de show.php) */
     .month-header { font-size: 1.75rem; font-weight: 300; color: var(--bs-primary); border-bottom: 1px solid #dee2e6; padding-bottom: 0.5rem; margin-top: 2rem; margin-bottom: 1.5rem; }
