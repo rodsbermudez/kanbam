@@ -84,13 +84,44 @@
                     <h5 class="mb-0">Projetos Ativos</h5>
                 </div>
                 <div class="list-group list-group-flush">
-                    <?php if (empty($projects)): ?>
+                    <?php if (empty($active_projects)): ?>
                         <div class="list-group-item">Nenhum projeto ativo para este cliente.</div>
                     <?php else: ?>
-                        <?php foreach ($projects as $project): ?>
-                            <a href="<?= site_url('admin/projects/' . $project->id) ?>" class="list-group-item list-group-item-action">
-                                <?= esc($project->name) ?>
-                            </a>
+                        <?php foreach ($active_projects as $project): ?>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="<?= site_url('admin/projects/' . $project->id) ?>" class="text-decoration-none text-body flex-grow-1">
+                                    <?= esc($project->name) ?>
+                                </a>
+                                <div class="form-check form-switch" title="Exibir no portal do cliente">
+                                    <input class="form-check-input project-visibility-toggle" type="checkbox" role="switch" 
+                                           data-project-id="<?= $project->id ?>" 
+                                           <?= !isset($project->is_visible_to_client) || $project->is_visible_to_client ? 'checked' : '' ?>>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Projetos Concluídos</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <?php if (empty($concluded_projects)): ?>
+                        <div class="list-group-item">Nenhum projeto concluído para este cliente.</div>
+                    <?php else: ?>
+                        <?php foreach ($concluded_projects as $project): ?>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="<?= site_url('admin/projects/' . $project->id) ?>" class="text-decoration-none text-body flex-grow-1">
+                                    <?= esc($project->name) ?> <span class="badge bg-success">Concluído</span>
+                                </a>
+                                <div class="form-check form-switch" title="Exibir no portal do cliente">
+                                    <input class="form-check-input project-visibility-toggle" type="checkbox" role="switch" 
+                                           data-project-id="<?= $project->id ?>" 
+                                           <?= !isset($project->is_visible_to_client) || $project->is_visible_to_client ? 'checked' : '' ?>>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -157,6 +188,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     copyToClipboard('accessLink', 'copyLinkBtn');
     copyToClipboard('accessPassword', 'copyPasswordBtn');
+
+    const visibilityToggles = document.querySelectorAll('.project-visibility-toggle');
+    visibilityToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const projectId = this.dataset.projectId;
+            const isVisible = this.checked;
+            const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
+
+            fetch(`<?= site_url('admin/projects/') ?>${projectId}/toggle-client-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ is_visible: isVisible }) // Embora a lógica no backend não use isso, é bom enviar
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // A mensagem de sucesso pode ser exibida com um toast, se desejado.
+                    // Por enquanto, a mudança visual do switch é suficiente.
+                    console.log('Visibilidade do projeto alterada com sucesso.');
+                } else {
+                    // Reverte o switch em caso de erro
+                    this.checked = !isVisible;
+                    alert('Erro ao alterar a visibilidade do projeto.');
+                }
+            });
+        });
+    });
 });
 </script>
 

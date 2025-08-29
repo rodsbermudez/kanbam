@@ -51,8 +51,11 @@
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2" title="<?= $stats->overdue_tasks ?> tarefa(s) em atraso!"></i>
                     <?php endif; ?>
                     <?= esc($project->name) ?>
+                    <?php if (isset($project->status) && $project->status === 'concluded'): ?>
+                        <span class="badge bg-success">Concluído</span>
+                    <?php endif; ?>
                 </td>
-                <td><?= esc(character_limiter($project->description, 100)) ?></td>
+                <td><?= esc($project->description) ?></td>
                 <td class="text-center align-middle">
                     <?php
                         $total = $stats->total_tasks ?? 0;

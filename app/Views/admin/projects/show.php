@@ -74,6 +74,9 @@
                     <?php if (!empty($project->client_tag)): ?>
                         <span class="badge fs-6" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
                     <?php endif; ?>
+                    <?php if (isset($project->status) && $project->status === 'concluded'): ?>
+                        <span class="badge bg-success fs-6">Concluído</span>
+                    <?php endif; ?>
                 </div>
                 <p class="text-muted mb-0"><?= esc($project->description) ?></p>
             </div>
@@ -115,9 +118,29 @@
                     </div>
                 </div>
                 <!-- Ações do Projeto -->
-                <div class="btn-group" role="group" aria-label="Ações do Projeto">
-                    <a href="<?= site_url('admin/projects/' . $project->id . '/edit') ?>" class="btn btn-primary">Editar Projeto</a>
-                    <a href="<?= site_url('admin/projects/' . $project->id . '/delete') ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja remover este projeto?')">Remover Projeto</a>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear-fill me-1"></i> Ações
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="<?= site_url('admin/projects/' . $project->id . '/edit') ?>"><i class="bi bi-pencil-square me-2"></i>Editar</a>
+                        </li>
+                        <li>
+                            <?php
+                                $isActive = isset($project->status) && $project->status === 'active';
+                                $toggleText = $isActive ? 'Concluir' : 'Reativar';
+                                $toggleClass = $isActive ? '' : 'text-success fw-bold';
+                                $toggleIcon = $isActive ? 'bi-check-circle' : 'bi-arrow-clockwise';
+                            ?>
+                            <form action="<?= site_url('admin/projects/' . $project->id . '/toggle-status') ?>" method="post" id="toggleStatusForm" class="d-none"><?= csrf_field() ?></form>
+                            <a class="dropdown-item <?= $toggleClass ?>" href="#" onclick="event.preventDefault(); document.getElementById('toggleStatusForm').submit();">
+                                <i class="bi <?= $toggleIcon ?> me-2"></i><?= $toggleText ?>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="<?= site_url('admin/projects/' . $project->id . '/delete') ?>" onclick="return confirm('Tem certeza que deseja remover este projeto? Esta ação não pode ser desfeita.')"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                    </ul>
                 </div>
             </div>
             <div id="bulk-actions" class="d-none align-items-center gap-2">
@@ -211,7 +234,7 @@
                                                 </div>
 
                                                 <?php if (!empty($task->description)): ?>
-                                                    <p class="card-text mt-2"><?= esc(character_limiter($task->description, 80)) ?></p>
+                                                    <p class="card-text mt-2 small"><?= nl2br(esc($task->description)) ?></p>
                                                 <?php endif; ?>
 
                                                 <!-- Seção de Notas -->
@@ -435,6 +458,12 @@
         <div class="tab-pane fade content-constrained <?= $active_tab === 'timeline' ? 'show active' : '' ?>" id="timeline-tab-pane" role="tabpanel" aria-labelledby="timeline-tab" tabindex="0">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2>Cronograma Semanal de Entregas</h2>
+                <?php if (session()->get('is_admin')): ?>
+                <div class="form-check form-switch fs-5">
+                    <input class="form-check-input" type="checkbox" role="switch" id="projectVisibilityToggle" data-project-id="<?= $project->id ?>" <?= !isset($project->is_visible_to_client) || $project->is_visible_to_client ? 'checked' : '' ?>>
+                    <label class="form-check-label" for="projectVisibilityToggle">Visível no Portal do Cliente</label>
+                </div>
+                <?php endif; ?>
             </div>
             <p class="text-muted">Visão geral das tarefas do projeto agrupadas por semana de entrega.</p>
 
@@ -469,7 +498,7 @@
                                     <li class="list-group-item clickable-task" data-task-id="<?= $task->id ?>">
                                         <div class="task-info">
                                             <strong class="d-block"><?= esc($task->title) ?></strong>
-                                            <small class="text-muted"><?= esc(character_limiter($task->description, 100)) ?></small>
+                                            <small class="text-muted"><?= esc($task->description) ?></small>
                                         </div>
                                         <div class="task-meta">
                                             <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
@@ -1563,11 +1592,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         sortableInstances.push(sortable); // Guarda a instância para poder desabilitá-la
     });
-});
 
-// --- Lógica para a Aba de Documentos ---
-document.addEventListener('DOMContentLoaded', function () {
-    const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
+    // --- Lógica para a Aba de Documentos ---
     const projectId = <?= $project->id ?>;
 
     // Elementos da UI
@@ -1785,6 +1811,36 @@ document.addEventListener('DOMContentLoaded', function () {
         [...ganttTooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
+    // --- Lógica para o Toggle de Visibilidade no Portal do Cliente ---
+    const visibilityToggle = document.getElementById('projectVisibilityToggle');
+    if (visibilityToggle) {
+        visibilityToggle.addEventListener('change', function() {
+            const projectId = this.dataset.projectId;
+            const isVisible = this.checked;
+
+            fetch(`<?= site_url('admin/projects/') ?>${projectId}/toggle-client-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const message = data.new_visibility ? 'Projeto agora está visível no portal do cliente.' : 'Projeto agora está oculto no portal do cliente.';
+                    showToast(message, 'success');
+                } else {
+                    this.checked = !isVisible; // Reverte em caso de erro
+                    showToast(data.message || 'Erro ao alterar a visibilidade.', 'danger');
+                }
+            }).catch(err => {
+                this.checked = !isVisible;
+                showToast('Erro de comunicação. Tente novamente.', 'danger');
+            });
+        });
+    }
 });
 </script>
 

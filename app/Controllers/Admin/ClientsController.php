@@ -65,10 +65,24 @@ class ClientsController extends BaseController
         }
         $access = $clientAccessModel->where('client_id', $id)->first();
 
+        // Separa os projetos em ativos e concluídos
+        $allProjects = $projectModel->getProjectsForClient($id);
+        $activeProjects = [];
+        $concludedProjects = [];
+
+        foreach ($allProjects as $project) {
+            if (isset($project->status) && $project->status === 'concluded') {
+                $concludedProjects[] = $project;
+            } else {
+                $activeProjects[] = $project;
+            }
+        }
+
         $data = [
             'title'          => 'Detalhes do Cliente: ' . esc($client->name),
             'client'         => $client,
-            'projects'       => $projectModel->getProjectsForClient($id),
+            'active_projects'  => $activeProjects,
+            'concluded_projects' => $concludedProjects,
             'upcoming_tasks' => $taskModel->getUpcomingTasksForClient($id),
             'overdue_tasks'  => $taskModel->getOverdueTasksForClient($id),
             'access'         => $access,

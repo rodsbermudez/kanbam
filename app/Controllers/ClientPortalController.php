@@ -65,7 +65,10 @@ class ClientPortalController extends BaseController
         $clientId = session()->get('client_portal_client_id');
 
         $projectModel = new ProjectModel();
-        $projects = $projectModel->where('client_id', $clientId)->orderBy('name', 'ASC')->findAll();
+        $projects = $projectModel->where('client_id', $clientId)
+                                  ->where('is_visible_to_client', 1) // Apenas projetos visíveis
+                                  ->orderBy('name', 'ASC')
+                                  ->findAll();
 
         if (empty($projects)) {
             return view('client_portal/dashboard', [
@@ -82,8 +85,9 @@ class ClientPortalController extends BaseController
 
         $selectedProject = $projectModel->find($selectedProjectId);
 
-        if (!$selectedProject || $selectedProject->client_id != $clientId) {
-            return redirect()->to('/portal/dashboard')->with('error', 'Projeto inválido.');
+        // Valida se o projeto existe, pertence ao cliente e está marcado como visível.
+        if (!$selectedProject || $selectedProject->client_id != $clientId || !$selectedProject->is_visible_to_client) {
+            return redirect()->to('/portal/dashboard')->with('error', 'Projeto inválido ou não acessível.');
         }
 
         // Lógica do Cronograma Semanal (reutilizada)

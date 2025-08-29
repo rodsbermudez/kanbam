@@ -56,29 +56,33 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('clients/access/(:num)/regenerate-password', 'Admin\ClientsController::regeneratePassword/$1');
 
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
-        $routes->resource('projects', ['controller' => 'Admin\ProjectsController', 'except' => ['index', 'show']]);
+        // Rotas específicas de projeto (devem vir antes do 'resource' para ter prioridade)
         $routes->get('projects/(:num)/delete', 'Admin\ProjectsController::delete/$1');
+        $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
+        $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
         $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
         $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
+        $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
+        $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');
+        $routes->post('projects/(:num)/reports/import', 'Admin\ReportsController::import/$1');
+        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1');
+        $routes->post('projects/(:num)/tasks/save-ai', 'Admin\TasksController::saveAIGeneratedTasks/$1');
+        $routes->post('projects/(:num)/tasks/generate-ai', 'Admin\TasksController::generateWithAI/$1');
+        // Rota genérica 'resource' para as ações padrão (new, create, edit, update)
+        $routes->resource('projects', ['controller' => 'Admin\ProjectsController', 'except' => ['index', 'show']]);
 
         // Rotas para Arquivos de Projeto
-        $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
         $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
         $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
         $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
-        $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');
 
         // Rotas para Relatórios de Projeto
         $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');
-        $routes->post('projects/(:num)/reports/import', 'Admin\ReportsController::import/$1');
         $routes->get('reports/(:num)', 'Admin\ReportsController::show/$1');
         $routes->post('reports/(:num)/delete', 'Admin\ReportsController::delete/$1');
 
         // Gerenciamento de Tarefas
-        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1'); // Rota reativada para o modal específico do projeto
         $routes->post('tasks/create', 'Admin\TasksController::create'); // Nova rota global
-        $routes->post('projects/(:num)/tasks/save-ai', 'Admin\TasksController::saveAIGeneratedTasks/$1');
-        $routes->post('projects/(:num)/tasks/generate-ai', 'Admin\TasksController::generateWithAI/$1');
         $routes->post('tasks/update-board', 'Admin\TasksController::updateBoard');
 
         // Rotas para buscar, atualizar e deletar uma tarefa específica

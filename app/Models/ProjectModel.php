@@ -12,7 +12,7 @@ class ProjectModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description', 'client_id'];
+    protected $allowedFields    = ['name', 'description', 'client_id', 'status', 'is_visible_to_client'];
 
     // Dates
     protected $useTimestamps = true;
@@ -26,10 +26,11 @@ class ProjectModel extends Model
      */
     public function getProjectsForUser(int $userId, ?string $search = null)
     {
-        $builder = $this->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+        $builder = $this->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
                         ->join('clients', 'clients.id = projects.client_id', 'left')
                         ->join('project_users', 'project_users.project_id = projects.id')
-                        ->where('project_users.user_id', $userId);
+                        ->where('project_users.user_id', $userId)
+                        ->where('projects.status', 'active'); // Adicionado filtro para projetos ativos
 
         if ($search) {
             $builder->groupStart()

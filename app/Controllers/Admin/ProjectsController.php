@@ -28,7 +28,7 @@ class ProjectsController extends BaseController
         $search = $this->request->getGet('search');
 
         // Base query com join para incluir dados do cliente
-        $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+        $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
                      ->join('clients', 'clients.id = projects.client_id', 'left');
 
         // Se for admin, busca todos os projetos. Senão, busca apenas os projetos do usuário.
@@ -134,7 +134,7 @@ class ProjectsController extends BaseController
         $userModel = new UserModel();
         
         $project = $projectModel
-            ->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color')
+            ->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status, projects.is_visible_to_client')
             ->join('clients', 'clients.id = projects.client_id', 'left')
             ->find($id);
 
@@ -459,5 +459,48 @@ class ProjectsController extends BaseController
         $members = $userModel->getUsersForProject($projectId);
 
         return $this->response->setJSON(['success' => true, 'members' => $members]);
+    }
+
+    /**
+     * Alterna o status de um projeto entre 'active' e 'concluded'.
+     */
+    public function toggleStatus($id)
+    {
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($id);
+
+        if (!$project) {
+            return redirect()->back()->with('error', 'Projeto não encontrado.');
+        }
+
+        $newStatus = ($project->status === 'active') ? 'concluded' : 'active';
+
+        if ($projectModel->update($id, ['status' => $newStatus])) {
+            $message = ($newStatus === 'concluded') ? 'Projeto marcado como concluído.' : 'Projeto reativado.';
+            return redirect()->to('admin/projects/' . $id)->with('success', $message);
+        }
+
+        return redirect()->to('admin/projects/' . $id)->with('error', 'Erro ao alterar o status do projeto.');
+    }
+
+    /**
+     * Alterna a visibilidade de um projeto no portal do cliente via AJAX.
+     */
+    public function toggleClientVisibility($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403, 'Acesso negado.');
+        }
+
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($id);
+
+        $newVisibility = !(bool)($project->is_visible_to_client ?? true);
+
+        if ($projectModel->update($id, ['is_visible_to_client' => $newVisibility])) {
+            return $this->response->setJSON(['success' => true, 'new_visibility' => $newVisibility]);
+        }
+
+        return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Erro ao atualizar a visibilidade do projeto.']);
     }
 }

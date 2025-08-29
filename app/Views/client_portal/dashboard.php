@@ -102,7 +102,7 @@
                                 <li class="list-group-item">
                                     <div class="task-info">
                                         <strong class="d-block"><?= esc($task->title) ?></strong>
-                                        <small class="text-muted"><?= esc(character_limiter($task->description, 100)) ?></small>
+                                        <small class="text-muted"><?= esc($task->description) ?></small>
                                     </div>
                                     <div class="task-meta">
                                         <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
