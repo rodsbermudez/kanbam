@@ -63,6 +63,8 @@ class ClientPortalController extends BaseController
         helper('text');
         helper('user');
 
+        $agent = $this->request->getUserAgent(); // Pega o serviço de User Agent
+
         $clientId = session()->get('client_portal_client_id');
 
         $projectModel = new ProjectModel();
@@ -141,7 +143,12 @@ class ClientPortalController extends BaseController
             'visible_files'    => $visible_files,
         ];
 
-        return view('client_portal/dashboard', $data);
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('client_portal/dashboard_mobile', $data);
+        }
+
+        return view('client_portal/dashboard', $data); // Mantém a view de desktop
     }
 
     public function logout()
