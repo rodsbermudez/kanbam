@@ -55,7 +55,7 @@
     <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
         <i class="bi bi-list fs-4"></i>
     </button>
-    <img src="<?= base_url('logo-patropi.svg') ?>" alt="Logo" style="height: 30px;">
+    <img src="<?= base_url('logo-patropi.svg') ?>" alt="Logo" style="height: 35px;">
     <div style="width: 40px;"></div> <!-- Espaçador para centralizar a logo -->
 </header>
 

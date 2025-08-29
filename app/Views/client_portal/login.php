@@ -1,12 +1,13 @@
 <?= $this->include('partials/header') ?>
 
 <style>
-    body {
+         .login-container {
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
         background-color: #f8f9fa; /* bg-light */
+        padding: 1rem; /* Garante espaçamento em telas pequenas */
     }
     .login-card {
         width: 100%;
@@ -14,8 +15,8 @@
     }
 </style>
 
-<main class="container">
-    <div class="card login-card mx-auto shadow-sm">
+<div class="login-container">
+    <div class="card login-card shadow-sm">
         <div class="card-body p-4 p-md-5">
             <div class="text-center mb-4">
                 <img src="<?= base_url('logo-patropi.svg') ?>" alt="Logo" style="height: 40px;">
@@ -36,6 +37,6 @@
             </form>
         </div>
     </div>
-</main>
+</div>
 
-<?= $this->include('partials/footer') ?>
+<?= $this->include('partials/footer_portal') ?>

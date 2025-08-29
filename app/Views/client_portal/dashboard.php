@@ -71,7 +71,7 @@
 
 <aside class="client-sidebar">
     <div class="sidebar-header">
-        <img src="<?= base_url('logo-patropi.svg') ?>" alt="Logo" style="height: 30px;">
+        <img src="<?= base_url('logo-patropi.svg') ?>" alt="Logo" style="height: 40px;">
     </div>
 
     <div class="sidebar-content">
