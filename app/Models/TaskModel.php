@@ -76,7 +76,7 @@ class TaskModel extends Model
         $dateLimit = date('Y-m-d', strtotime("+$days days"));
         $today = date('Y-m-d');
 
-        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
+        $builder = $this->select('tasks.title, tasks.due_date, tasks.status, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
                     ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('tasks.user_id', $userId)
@@ -102,7 +102,7 @@ class TaskModel extends Model
     {
         $today = date('Y-m-d');
 
-        $builder = $this->select('tasks.title, tasks.due_date, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
+        $builder = $this->select('tasks.title, tasks.due_date, tasks.status, projects.name as project_name, projects.id as project_id, clients.tag as client_tag, clients.color as client_color')
                     ->join('projects', 'projects.id = tasks.project_id')
                     ->join('clients', 'clients.id = projects.client_id', 'left')
                     ->where('tasks.user_id', $userId)

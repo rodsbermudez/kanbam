@@ -11,6 +11,21 @@
 
     <div class="row" data-bs-toggle="masonry">
         <!-- Card Próximas Tarefas -->
+        <?php
+        // Mapeamento de status para cores de badge, para ser usado nos loops
+        $status_colors = [
+            'concluída'         => 'bg-success',
+            'cancelada'         => 'bg-danger',
+            'em desenvovimento' => 'bg-primary',
+            'ajustes'           => 'bg-warning text-dark',
+            'aprovação'         => 'bg-info text-dark',
+            'não iniciadas'     => 'bg-light text-dark',
+            'com cliente'       => 'bg-info text-dark',
+            'aprovada'          => 'bg-success',
+            'implementada'      => 'bg-success',
+            'default'           => 'bg-secondary'
+        ];
+        ?>
         <div class="mb-4" style="width: 500px;">
             <div class="card">
                 <div class="card-header">
@@ -21,17 +36,23 @@
                         <div class="list-group-item">Nenhuma tarefa próxima.</div>
                     <?php else: ?>
                         <?php foreach ($upcoming_tasks as $task): ?>
+                            <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
                             <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1"><?= esc($task->title) ?></h6>
                                     <small><?= date('d/m/Y', strtotime($task->due_date)) ?></small>
                                 </div>
-                                <p class="mb-1 text-muted small">
-                                    Projeto: <?= esc($task->project_name) ?>
-                                </p>
-                                <?php if (!empty($task->client_tag)): ?>
-                                    <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
-                                <?php endif; ?>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <p class="mb-0 text-muted small">
+                                        Projeto: <?= esc($task->project_name) ?>
+                                    </p>
+                                    <div>
+                                        <span class="badge <?= $status_class ?> me-1"><?= esc(ucfirst($task->status)) ?></span>
+                                        <?php if (!empty($task->client_tag)): ?>
+                                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -50,17 +71,23 @@
                         <div class="list-group-item">Nenhuma tarefa atrasada.</div>
                     <?php else: ?>
                         <?php foreach ($overdue_tasks as $task): ?>
+                            <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
                             <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1 text-danger"><?= esc($task->title) ?></h6>
                                     <small class="text-danger">Venceu em: <?= date('d/m/Y', strtotime($task->due_date)) ?></small>
                                 </div>
-                                <p class="mb-1 text-muted small">
-                                    Projeto: <?= esc($task->project_name) ?>
-                                </p>
-                                <?php if (!empty($task->client_tag)): ?>
-                                    <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
-                                <?php endif; ?>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <p class="mb-0 text-muted small">
+                                        Projeto: <?= esc($task->project_name) ?>
+                                    </p>
+                                    <div>
+                                        <span class="badge <?= $status_class ?> me-1"><?= esc(ucfirst($task->status)) ?></span>
+                                        <?php if (!empty($task->client_tag)): ?>
+                                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
