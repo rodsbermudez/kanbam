@@ -271,7 +271,7 @@ class ProjectsController extends BaseController
 
         // Busca os documentos do projeto
         $docModel = new ProjectDocumentModel();
-        $documents = $docModel->where('project_id', $id)->orderBy('title', 'ASC')->findAll();
+        $documents = $docModel->where('project_id', $id)->orderBy('order', 'ASC')->orderBy('title', 'ASC')->findAll();
 
         // Agrupa as tarefas por status para o quadro Kanban
         $groupedTasks = [];
@@ -393,6 +393,38 @@ class ProjectsController extends BaseController
         }
 
         return redirect()->to('/admin/projects')->with('success', 'Projeto e todos os seus dados foram removidos com sucesso.');
+    }
+
+    /**
+     * Reordena os documentos de um projeto via AJAX.
+     */
+    public function reorderDocuments($projectId)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403, 'Acesso negado.');
+        }
+
+        $orderedIds = $this->request->getJSON(true)['doc_ids'] ?? [];
+
+        if (empty($orderedIds)) {
+            return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'Nenhuma ordem recebida.']);
+        }
+
+        $docModel = new ProjectDocumentModel();
+        
+        $updateData = [];
+        foreach ($orderedIds as $index => $docId) {
+            $updateData[] = [
+                'id'    => (int)$docId,
+                'order' => $index
+            ];
+        }
+
+        if ($docModel->updateBatch($updateData, 'id')) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Ordem das páginas salva com sucesso.']);
+        }
+
+        return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Erro ao salvar a nova ordem.']);
     }
 
     /**

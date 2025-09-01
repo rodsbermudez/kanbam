@@ -63,6 +63,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
         $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
         $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
+        $routes->post('projects/(:num)/documents/reorder', 'Admin\ProjectsController::reorderDocuments/$1');
         $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
         $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
         $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');

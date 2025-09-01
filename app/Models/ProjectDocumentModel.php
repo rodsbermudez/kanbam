@@ -12,7 +12,7 @@ class ProjectDocumentModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['project_id', 'title', 'content'];
+    protected $allowedFields    = ['project_id', 'title', 'content', 'order'];
 
     // Dates
     protected $useTimestamps = true;

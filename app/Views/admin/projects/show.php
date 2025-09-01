@@ -61,6 +61,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+#document-list .list-group-item-action {
+    cursor: grab;
+}
 </style>
 
 <main class="container-fluid mt-6 px-4">
@@ -1754,6 +1757,37 @@ document.addEventListener('DOMContentLoaded', function () {
     // Ao carregar a página, se houver um documento para selecionar, carrega-o.
     if (docToSelect) {
         loadDocument(docToSelect);
+    }
+
+    // --- Lógica para Reordenar Documentos ---
+    if (documentList) {
+        new Sortable(documentList, {
+            animation: 150,
+            ghostClass: 'bg-info-subtle',
+            handle: '.list-group-item-action', // Define o handle para o próprio item
+            onEnd: function (evt) {
+                const docIds = Array.from(evt.to.children).map(item => item.dataset.docId);
+                
+                fetch(`<?= site_url('admin/projects/') ?>${projectId}/documents/reorder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken // csrfToken is already defined in this file
+                    },
+                    body: JSON.stringify({ doc_ids: docIds })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Erro ao salvar a ordem.', 'danger');
+                    }
+                })
+                .catch(err => showToast('Erro de comunicação ao reordenar.', 'danger'));
+            }
+        });
     }
 
     // --- Lógica para o Modal de Importação de Relatórios ---
