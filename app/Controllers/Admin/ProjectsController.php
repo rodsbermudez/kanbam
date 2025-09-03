@@ -428,6 +428,32 @@ class ProjectsController extends BaseController
     }
 
     /**
+     * Atualiza as configurações de layout do Kanban para um projeto via AJAX.
+     */
+    public function updateKanbanSettings($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403, 'Acesso negado.');
+        }
+
+        $projectModel = new ProjectModel();
+        $layout = $this->request->getJsonVar('layout');
+
+        // Validação simples
+        if (!in_array($layout, ['normal', 'simplified'])) {
+            return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'Layout inválido.']);
+        }
+
+        $data = ['kanban_layout' => $layout];
+
+        if ($projectModel->update($id, $data)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Layout do quadro atualizado.']);
+        }
+
+        return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Erro ao salvar o layout do quadro.']);
+    }
+
+    /**
      * Associa um usuário a um projeto.
      */
     public function addUser($projectId)

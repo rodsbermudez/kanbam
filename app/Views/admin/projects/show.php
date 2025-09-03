@@ -64,6 +64,16 @@
 #document-list .list-group-item-action {
     cursor: grab;
 }
+.kanban-layout-simplified .kanban-column[data-status="com cliente"],
+.kanban-layout-simplified .kanban-column[data-status="ajustes"],
+.kanban-layout-simplified .kanban-column[data-status="aprovada"],
+.kanban-layout-simplified .kanban-column[data-status="implementada"] {
+    display: none;
+}
+.dropdown-item.active {
+    font-weight: bold;
+    background-color: var(--bs-primary-bg-subtle);
+}
 </style>
 
 <main class="container-fluid mt-6 px-4">
@@ -93,9 +103,12 @@
                             <i class="bi bi-columns-gap"></i>
                         </button>
                         <ul class="dropdown-menu" id="column-width-selector">
+                            <li><h6 class="dropdown-header">Largura das Colunas</h6></li>
                             <li><a class="dropdown-item" href="#" data-width="compact">Compacta</a></li>
                             <li><a class="dropdown-item" href="#" data-width="normal">Normal</a></li>
                             <li><a class="dropdown-item" href="#" data-width="large">Grande</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="layout-toggle-simplified" data-layout="simplified">Layout Simplificado</a></li>
                         </ul>
                     </div>
                 </div>
@@ -188,9 +201,9 @@
                 <button id="kanban-scroll-left" class="btn kanban-nav-btn kanban-nav-left"><i class="bi bi-arrow-left-circle-fill fs-2"></i></button>
                 
                 <div class="kanban-board-container" id="kanban-container">
-                    <div class="kanban-board">
+                    <div class="kanban-board <?= ($project->kanban_layout ?? 'normal') === 'simplified' ? 'kanban-layout-simplified' : '' ?>">
                         <?php foreach ($statuses as $status): ?>
-                            <div class="kanban-column">
+                            <div class="kanban-column" data-status="<?= esc($status) ?>">
                                 <div class="kanban-column-title" data-status-title="<?= esc($status) ?>"><?= esc($status) ?></div>
                                 <div class="kanban-cards" data-status="<?= esc($status) ?>">
                                     <?php if (!empty($tasks[$status])): ?>
@@ -1034,6 +1047,7 @@ function openEditTaskModal(taskId) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
     const container = document.getElementById('kanban-container');
     const scrollLeftBtn = document.getElementById('kanban-scroll-left');
     const scrollRightBtn = document.getElementById('kanban-scroll-right');
@@ -1080,6 +1094,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // --- Lógica para Largura das Colunas e Scroll ---
         const kanbanBoard = document.querySelector('.kanban-board');
         const columnWidthSelector = document.getElementById('column-width-selector');
+        const layoutToggleSimplified = document.getElementById('layout-toggle-simplified');
         let scrollAmount = 316; // Default for compact
 
         const widthSettings = {
@@ -1114,6 +1129,51 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
+        // --- Lógica para o Layout Simplificado ---
+        function applyKanbanLayout(layoutName = 'normal') {
+            if (!kanbanBoard) return;
+
+            const isSimplified = layoutName === 'simplified';
+            kanbanBoard.classList.toggle('kanban-layout-simplified', isSimplified);
+            
+            if (layoutToggleSimplified) {
+                layoutToggleSimplified.classList.toggle('active', isSimplified);
+                if (isSimplified) {
+                    layoutToggleSimplified.innerHTML = '<i class="bi bi-check-lg me-2"></i>Layout Simplificado';
+                } else {
+                    layoutToggleSimplified.textContent = 'Layout Simplificado';
+                }
+            }
+            updateArrowVisibility(); // Recalcula as setas
+        }
+
+        if (layoutToggleSimplified) {
+            layoutToggleSimplified.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentLayout = kanbanBoard.classList.contains('kanban-layout-simplified') ? 'normal' : 'simplified';
+                applyKanbanLayout(currentLayout);
+
+                // Salva a preferência no banco
+                fetch(`<?= site_url('admin/projects/' . $project->id . '/kanban-settings') ?>`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken },
+                    body: JSON.stringify({ layout: currentLayout })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Erro desconhecido ao salvar o layout.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    showToast('Erro de comunicação com o servidor ao salvar o layout.', 'danger');
+                    console.error('Erro ao salvar layout do Kanban:', error);
+                });
+            });
+        }
+
         scrollLeftBtn.addEventListener('click', () => container.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
         scrollRightBtn.addEventListener('click', () => container.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
 
@@ -1122,38 +1182,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Apply saved width on page load
         const savedWidth = localStorage.getItem('kanban_column_width') || 'compact';
         applyColumnWidth(savedWidth);
-    }
-
-    // --- Lógica para o Modal de Geração com IA ---
-    const aiTaskModalEl = document.getElementById('aiTaskModal');
-    if (aiTaskModalEl) {
-        aiTaskModalEl.addEventListener('show.bs.modal', function (event) {
-            // Botão que acionou o modal
-            const button = event.relatedTarget;
-
-            // Extrai as informações dos atributos data-*
-            const typeId = button.getAttribute('data-type-id');
-            const labelDesc = button.getAttribute('data-label-description');
-            const placeholderDesc = button.getAttribute('data-placeholder-description');
-            const labelItems = button.getAttribute('data-label-items');
-            const placeholderItems = button.getAttribute('data-placeholder-items');
-
-            // Atualiza o conteúdo do modal
-            const modal = this;
-            modal.querySelector('#project_type_id').value = typeId;
-            
-            const labelDescEl = modal.querySelector('#ai-label-description');
-            if (labelDescEl) labelDescEl.textContent = labelDesc || 'Descrição Detalhada do Projeto';
-            
-            const inputDescEl = modal.querySelector('#project_description');
-            if (inputDescEl) inputDescEl.placeholder = placeholderDesc || '';
-
-            const labelItemsEl = modal.querySelector('#ai-label-items');
-            if (labelItemsEl) labelItemsEl.textContent = labelItems || 'Itens/Páginas a Serem Criados (um por linha)';
-
-            const inputItemsEl = modal.querySelector('#project_pages');
-            if (inputItemsEl) inputItemsEl.placeholder = placeholderItems || '';
-        });
+        
+        // Apply saved layout on page load
+        const savedLayout = '<?= esc($project->kanban_layout ?? 'normal', 'js') ?>';
+        applyKanbanLayout(savedLayout);
     }
 
     // Lógica para o formulário de IA
@@ -1546,7 +1578,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Lógica do Drag and Drop com SortableJS ---
     const kanbanColumns = document.querySelectorAll('.kanban-cards');
-    const csrfToken = document.querySelector('input[name="<?= csrf_token() ?>"]').value;
 
     kanbanColumns.forEach(column => {
         const sortable = new Sortable(column, {

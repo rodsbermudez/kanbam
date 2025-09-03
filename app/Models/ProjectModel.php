@@ -12,7 +12,7 @@ class ProjectModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description', 'client_id', 'status', 'is_visible_to_client'];
+    protected $allowedFields    = ['name', 'description', 'client_id', 'status', 'is_visible_to_client', 'kanban_layout'];
 
     // Dates
     protected $useTimestamps = true;
