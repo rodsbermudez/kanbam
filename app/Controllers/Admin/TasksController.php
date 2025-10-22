@@ -174,7 +174,13 @@ class TasksController extends BaseController
 
             if (json_last_error() !== JSON_ERROR_NONE || !is_array($tasks)) {
                 log_message('error', 'Gemini API returned invalid JSON: ' . $tasksJson);
-                return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'A IA retornou uma resposta em formato inválido. Tente ser mais específico na descrição.']);
+                
+                $errorMessage = 'A IA retornou uma resposta em formato inválido. Tente ser mais específico na descrição.';
+                if (ENVIRONMENT === 'development') {
+                    $errorMessage .= '<br><br><strong>Resposta da IA:</strong><pre>' . esc($tasksJson) . '</pre>';
+                }
+
+                return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => $errorMessage]);
             }
 
             $tasksToInsert = [];
