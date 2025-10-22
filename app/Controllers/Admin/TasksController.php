@@ -131,7 +131,7 @@ class TasksController extends BaseController
             'project_deadline'    => 'required|valid_date',
         ]);
 
-        if (!$validation->withRequest($this->request)->run()) {
+        if (!$validation->run($this->request->getPost())) {
             return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'Todos os campos são obrigatórios.', 'errors' => $validation->getErrors()]);
         }
 
@@ -164,10 +164,8 @@ class TasksController extends BaseController
             }
 
             $client = Gemini::client($apiKey);
-            // O método geminiPro() está obsoleto. Usamos generativeModel() com o nome do modelo explícito.
-            // O modelo 'gemini-1.0-pro' não foi encontrado. Usaremos 'gemini-1.5-pro-latest',
-            // que é um modelo mais recente e robusto. O sufixo '-latest' garante que sempre usaremos a versão estável mais atual.
-            $result = $client->generativeModel(model: 'gemini-1.5-pro-latest')->generateContent($prompt);
+            // Usamos o modelo 'gemini-1.5-flash-latest', que é estável e recomendado para um bom equilíbrio entre custo e performance.
+            $result = $client->generativeModel(model: 'gemini-flash-latest')->generateContent($prompt);
 
             $tasksJson = $result->text();
             // Limpa a resposta da IA, removendo cercas de markdown e a palavra "json"

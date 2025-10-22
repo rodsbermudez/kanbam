@@ -1199,6 +1199,30 @@ document.addEventListener('DOMContentLoaded', function () {
     const aiReviewList = document.getElementById('ai-review-list');
     const aiApproveButton = document.getElementById('aiApproveButton');
 
+    const aiTaskModalEl = document.getElementById('aiTaskModal');
+    if (aiTaskModalEl) {
+        aiTaskModalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Botão que acionou o modal
+            if (!button) return;
+
+            const typeId = button.dataset.typeId;
+            
+            // Preenche os campos do formulário com base nos dados do tipo de projeto
+            document.getElementById('project_type_id').value = typeId;
+
+            // Pré-preenche a descrição do projeto
+            document.getElementById('project_description').value = button.dataset.projectDescription || '';
+
+            // Atualiza os rótulos e placeholders
+            const labelDesc = document.getElementById('ai-label-description');
+            const labelItems = document.getElementById('ai-label-items');
+            const placeholderDesc = document.getElementById('project_description');
+            const placeholderItems = document.getElementById('project_pages');
+
+            if(labelDesc) labelDesc.textContent = button.dataset.labelDescription || 'Descrição Detalhada';
+            if(labelItems) labelItems.textContent = button.dataset.labelItems || 'Itens/Páginas';
+        });
+    }
     if (aiForm) {
         aiForm.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -1219,7 +1243,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Verifica se a resposta foi bem-sucedida (status 2xx)
+                if (!response.ok) {
+                    // Se não for, lê a resposta como texto e lança um erro com o conteúdo
+                    return response.text().then(text => { throw new Error(text || `Erro ${response.status}`) });
+                }
+                // Se foi bem-sucedida, processa como JSON
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // 1. Esconde o modal de geração
@@ -1259,7 +1291,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(error => {
-                errorAlert.textContent = 'Erro de comunicação com o servidor. Tente novamente.';
+                // Exibe o erro capturado, que pode ser um erro de rede ou o texto da resposta de erro
+                errorAlert.innerHTML = error.message; // Usamos innerHTML para renderizar o <pre> do debug
                 errorAlert.classList.remove('d-none');
             })
             .finally(() => {
