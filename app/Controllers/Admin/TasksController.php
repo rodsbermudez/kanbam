@@ -168,9 +168,14 @@ class TasksController extends BaseController
             $result = $client->generativeModel(model: 'gemini-flash-latest')->generateContent($prompt);
 
             $tasksJson = $result->text();
-            // Limpa a resposta da IA, removendo cercas de markdown e a palavra "json"
-            $cleanedJson = preg_replace('/^```json\s*|```$/', '', $tasksJson);
-            $tasks = json_decode($cleanedJson, true);
+            
+            // Extrai o conteúdo JSON de dentro do bloco de código markdown ```json ... ```
+            $jsonContent = $tasksJson; // Fallback para o texto completo
+            if (preg_match('/```json\s*([\s\S]*?)\s*```/', $tasksJson, $matches)) {
+                $jsonContent = $matches[1];
+            }
+
+            $tasks = json_decode($jsonContent, true);
 
             if (json_last_error() !== JSON_ERROR_NONE || !is_array($tasks)) {
                 log_message('error', 'Gemini API returned invalid JSON: ' . $tasksJson);
