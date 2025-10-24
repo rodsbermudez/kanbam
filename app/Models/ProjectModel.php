@@ -12,7 +12,7 @@ class ProjectModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description', 'client_id', 'status', 'is_visible_to_client', 'kanban_layout'];
+    protected $allowedFields    = ['name', 'description', 'start_date', 'end_date', 'client_id', 'status', 'is_visible_to_client', 'kanban_layout'];
 
     // Dates
     protected $useTimestamps = true;
@@ -24,13 +24,12 @@ class ProjectModel extends Model
     /**
      * Retorna os projetos associados a um usuário específico, com opção de busca.
      */
-    public function getProjectsForUser(int $userId, ?string $search = null)
+    public function getProjectsForUser(int $userId, string $status = 'active', ?string $search = null)
     {
         $builder = $this->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
                         ->join('clients', 'clients.id = projects.client_id', 'left')
                         ->join('project_users', 'project_users.project_id = projects.id')
-                        ->where('project_users.user_id', $userId)
-                        ->where('projects.status', 'active'); // Adicionado filtro para projetos ativos
+                        ->where('project_users.user_id', $userId);
 
         if ($search) {
             $builder->groupStart()
@@ -40,8 +39,28 @@ class ProjectModel extends Model
                     ->groupEnd();
         }
 
-        // Garante que a ordenação e outras configurações do model sejam aplicadas
-        return $builder->findAll();
+        // Aplica o filtro de status e retorna os resultados
+        return $builder->where('projects.status', $status)->findAll();
+    }
+
+    /**
+     * Retorna a contagem de projetos por status.
+     * @return array
+     */
+    public function getProjectCountsByStatus()
+    {
+        $counts = $this->select("
+                            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                            SUM(CASE WHEN status = 'concluded' THEN 1 ELSE 0 END) as concluded
+                        ")
+                        ->where('deleted_at IS NULL')
+                        ->get()
+                        ->getRowArray();
+
+        return [
+            'active' => (int)($counts['active'] ?? 0),
+            'concluded' => (int)($counts['concluded'] ?? 0),
+        ];
     }
 
     /**

@@ -25,11 +25,17 @@ class ProjectsController extends BaseController
         helper('user');
 
         $projectModel = new ProjectModel();
+        
+        // Pega os parâmetros da URL
         $search = $this->request->getGet('search');
+        $status = $this->request->getGet('status') ?? 'active';
 
         // Base query com join para incluir dados do cliente
         $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
                      ->join('clients', 'clients.id = projects.client_id', 'left');
+
+        // Aplica o filtro de status
+        $projectModel->where('projects.status', $status);
 
         // Se for admin, busca todos os projetos. Senão, busca apenas os projetos do usuário.
         if (session()->get('is_admin')) {
@@ -37,12 +43,12 @@ class ProjectsController extends BaseController
                 $projectModel->groupStart()
                              ->like('projects.name', $search)
                              ->orLike('projects.description', $search)
-                             ->orLike('clients.name', $search) // Busca por nome do cliente
+                             ->orLike('clients.name', $search)
                              ->groupEnd();
             }
             $projects = $projectModel->findAll();
         } else {
-            $projects = $projectModel->getProjectsForUser(session()->get('user_id'), $search); // getProjectsForUser já faz o join
+            $projects = $projectModel->getProjectsForUser(session()->get('user_id'), $status, $search);
         }
 
         $projectTaskStats = [];
@@ -80,12 +86,17 @@ class ProjectsController extends BaseController
             }
         }
 
+        // Busca a contagem de projetos para as abas
+        $projectCounts = $projectModel->getProjectCountsByStatus();
+
         $data = [
             'title'            => 'Gerenciar Projetos',
             'projects'         => $projects,
             'search'           => $search,
             'project_task_stats' => $projectTaskStats,
             'project_members'  => $projectMembers,
+            'current_status'   => $status,
+            'project_counts'   => $projectCounts,
         ];
 
         return view('admin/projects/index', $data);

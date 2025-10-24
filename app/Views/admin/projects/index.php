@@ -18,10 +18,23 @@
         </div>
     </form>
 
+    <!-- Abas de Navegação -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link <?= $current_status === 'active' ? 'active' : '' ?>" href="<?= site_url('admin/projects?status=active') ?>">
+                Em Andamento <span class="badge bg-secondary"><?= $project_counts['active'] ?? 0 ?></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <?= $current_status === 'concluded' ? 'active' : '' ?>" href="<?= site_url('admin/projects?status=concluded') ?>">
+                Concluídos <span class="badge bg-secondary"><?= $project_counts['concluded'] ?? 0 ?></span>
+            </a>
+        </li>
+    </ul>
+
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Cliente</th>
                 <th>Nome</th>
                 <th>Descrição</th>
@@ -38,7 +51,6 @@
             <?php foreach ($projects as $project): ?>
             <?php $stats = $project_task_stats[$project->id] ?? null; ?>
             <tr class="clickable-row" data-href="<?= site_url('admin/projects/' . $project->id) ?>">
-                <td><?= $project->id ?></td>
                 <td>
                     <?php if (!empty($project->client_tag)): ?>
                         <span class="badge" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
@@ -51,9 +63,6 @@
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2" title="<?= $stats->overdue_tasks ?> tarefa(s) em atraso!"></i>
                     <?php endif; ?>
                     <?= esc($project->name) ?>
-                    <?php if (isset($project->status) && $project->status === 'concluded'): ?>
-                        <span class="badge bg-success">Concluído</span>
-                    <?php endif; ?>
                 </td>
                 <td><?= esc($project->description) ?></td>
                 <td class="text-center align-middle">
