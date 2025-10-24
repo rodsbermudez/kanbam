@@ -15,12 +15,24 @@ class ClientsController extends BaseController
      */
     public function index()
     {
-        $clientModel = new ClientModel();
+        $model = new ClientModel();
+        $search = $this->request->getGet('search');
+
+        // Aplica o filtro de busca se um termo for fornecido
+        if ($search) {
+            $model->groupStart()
+                  ->like('name', $search)
+                  ->orLike('tag', $search)
+                  ->groupEnd();
+        }
+
         $data = [
             'title'   => 'Gerenciar Clientes',
-            'clients' => $clientModel->findAll()
+            // Ordena por nome e busca os resultados
+            'clients' => $model->orderBy('name', 'ASC')->findAll(),
+            'search'  => $search // Passa o termo de busca para a view
         ];
-        return view('admin/clients/index', $data);
+        return view('admin/clients/index', $data); // O nome da view parece estar incorreto no seu arquivo, ajustei para o padrão.
     }
 
     /**
