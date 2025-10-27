@@ -52,6 +52,16 @@ class UsersController extends BaseController
             'project_counts'   => $projectCounts,
             'open_task_counts' => $openTaskCounts,
         ];
+
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/users/mobile', $data);
+        }
+
+        // Mantém a view de desktop para outros dispositivos
         return view('admin/users/index', $data);
     }
 
@@ -152,7 +162,15 @@ class UsersController extends BaseController
             'overdue_tasks'  => $taskModel->getOverdueTasksForUser($id),
         ];
 
-        // Reutiliza a view de detalhes do cliente, adaptando-a
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/users/show_mobile', $data);
+        }
+
+        // Mantém a view de desktop para outros dispositivos
         return view('admin/users/show', $data);
     }
 

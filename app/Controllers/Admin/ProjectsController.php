@@ -99,7 +99,15 @@ class ProjectsController extends BaseController
             'project_counts'   => $projectCounts,
         ];
 
-        return view('admin/projects/index', $data);
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/projects/mobile', $data);
+        }
+
+        return view('admin/projects/index', $data); // Mantém a view de desktop
     }
 
     /**

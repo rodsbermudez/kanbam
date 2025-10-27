@@ -30,6 +30,17 @@ class DashboardController extends BaseController
             'overdue_tasks'  => $taskModel->getOverdueTasksForUser($userId),
         ];
 
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            // Ajustado para o caminho correto da view mobile
+            return view('dashboard/mobile', $data);
+        }
+
+        // Mantém a view de desktop para outros dispositivos
+        // Ajustado para o caminho correto da view de desktop
         return view('dashboard/index', $data);
     }
 }

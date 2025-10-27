@@ -32,7 +32,17 @@ class ClientsController extends BaseController
             'clients' => $model->orderBy('name', 'ASC')->findAll(),
             'search'  => $search // Passa o termo de busca para a view
         ];
-        return view('admin/clients/index', $data); // O nome da view parece estar incorreto no seu arquivo, ajustei para o padrão.
+
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/clients/mobile', $data);
+        }
+
+        // Mantém a view de desktop para outros dispositivos
+        return view('admin/clients/index', $data);
     }
 
     /**
@@ -100,6 +110,15 @@ class ClientsController extends BaseController
             'access'         => $access,
         ];
 
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/clients/show_mobile', $data);
+        }
+
+        // Mantém a view de desktop para outros dispositivos
         return view('admin/clients/show', $data);
     }
 
