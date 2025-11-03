@@ -136,7 +136,26 @@ class ProjectsController extends BaseController
         }
 
         if ($projectModel->save($data)) {
-            return redirect()->to('/admin/projects')->with('success', 'Projeto criado com sucesso.');
+            $projectId = $projectModel->getInsertID();
+
+            // Busca o projeto recém-criado com os dados do cliente para um payload mais completo
+            $newProject = $projectModel
+                ->select('projects.*, clients.name as client_name')
+                ->join('clients', 'clients.id = projects.client_id', 'left')
+                ->find($projectId);
+
+            // Dispara o Webhook para o N8N
+            dispararWebhookN8N('projeto-criado', [
+                'event'   => 'project.created',
+                'project' => $newProject, // Envia o objeto completo do projeto
+                'actor'   => [
+                    'id'   => session()->get('user_id'),
+                    'name' => session()->get('name')
+                ]
+            ]);
+
+            // Redireciona para a página de visualização do novo projeto
+            return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Projeto criado com sucesso.');
         }
 
         return redirect()->back()->withInput()->with('errors', $projectModel->errors());
@@ -323,7 +342,15 @@ class ProjectsController extends BaseController
             'select_doc_id'   => $selectDocId,
         ];
 
-        return view('admin/projects/show', $data);
+        // Pega o serviço de User Agent
+        $agent = $this->request->getUserAgent();
+
+        // Se for um dispositivo móvel, carrega a view otimizada
+        if ($agent->isMobile()) {
+            return view('admin/projects/show_mobile', $data);
+        }
+
+        return view('admin/projects/show', $data); // Mantém a view de desktop
     }
 
     /**
@@ -489,6 +516,20 @@ class ProjectsController extends BaseController
 
         if (!$exists) {
             $data = ['project_id' => $projectId, 'user_id' => $userId];
+            if ($projectUserModel->save($data)) {
+                // Dispara o Webhook para o N8N
+                $project = (new ProjectModel())->find($projectId);
+                $user = (new UserModel())->find($userId);
+
+                dispararWebhookN8N('novo-usuario-projeto', [
+                    'event'   => 'user.added.to.project',
+                    'project' => ['id' => $project->id, 'name' => $project->name],
+                    'user'    => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+                    'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
+                ]);
+
+                return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário associado com sucesso.')->with('active_tab', 'members');
+            }
             if ($projectUserModel->save($data)) {
                 return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário associado com sucesso.')->with('active_tab', 'members');
             }
