@@ -163,12 +163,27 @@
                 <?= csrf_field() ?>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="project_name" class="form-label">Nome do Projeto</label>
-                        <input type="text" class="form-control" id="project_name" name="name" required>
+                        <label for="global_project_name" class="form-label">Nome do Projeto</label>
+                        <input type="text" class="form-control" id="global_project_name" name="name" value="<?= old('name') ?>" required>
+                    </div>
+                    <!-- Campo Cliente (Obrigatório) -->
+                    <div class="mb-3">
+                        <label for="global_client_id" class="form-label">Cliente</label>
+                        <select class="form-select" id="global_client_id" name="client_id" required>
+                            <option value="">Selecione um cliente...</option>
+                            <?php if (!empty($global_clients)): ?>
+                                <?php foreach ($global_clients as $client): ?>
+                                    <option value="<?= $client->id ?>" <?= old('client_id') == $client->id ? 'selected' : '' ?>>
+                                        <?= esc($client->name) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                        <small class="form-text text-danger">A associação a um cliente é obrigatória.</small>
                     </div>
                     <div class="mb-3">
-                        <label for="project_description" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="project_description" name="description" rows="3"></textarea>
+                        <label for="global_project_description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="global_project_description" name="description" rows="3"><?= old('description') ?></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -192,20 +207,41 @@
                 <?= csrf_field() ?>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="user_name" class="form-label">Nome Completo</label>
-                        <input type="text" class="form-control" id="user_name" name="name" required>
+                        <label for="global_user_name" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="global_user_name" name="name" value="<?= old('name') ?>" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="global_initials" class="form-label">Sigla (2 letras)</label>
+                            <input type="text" class="form-control" id="global_initials" name="initials" value="<?= old('initials') ?>" maxlength="2">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="global_color" class="form-label">Cor do Ícone</label>
+                            <input type="color" class="form-control form-control-color" id="global_color" name="color" value="<?= old('color', '#6c757d') ?>" title="Escolha uma cor">
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="user_email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="user_email" name="email" required>
+                        <label for="global_user_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="global_user_email" name="email" value="<?= old('email') ?>" required>
+                    </div>
+                    <!-- Slack User ID -->
+                    <div class="form-group mb-3">
+                        <label for="global_slack_user_id" class="form-label">ID do Slack</label>
+                        <input type="text" class="form-control" id="global_slack_user_id" name="slack_user_id"
+                               placeholder="Ex: U0123ABCDEF"
+                               value="<?= old('slack_user_id') ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="user_password" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="user_password" name="password" required>
+                        <label for="global_user_password" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="global_user_password" name="password" required>
                     </div>
                     <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" role="switch" id="user_is_admin" name="is_admin" value="1">
-                        <label class="form-check-label" for="user_is_admin">É Administrador?</label>
+                        <input class="form-check-input" type="checkbox" role="switch" id="global_user_is_admin" name="is_admin" value="1" <?= old('is_admin') ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="global_user_is_admin">É Administrador?</label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="global_user_is_active" name="is_active" value="1" <?= old('is_active', 1) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="global_user_is_active">Usuário Ativo</label>
                     </div>
                 </div>
                 <div class="modal-footer">

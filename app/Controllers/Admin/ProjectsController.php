@@ -138,13 +138,26 @@ class ProjectsController extends BaseController
      */
     public function create()
     {
+        // 1. Define as regras de validação
+        $rules = [
+            'name'      => 'required|min_length[3]',
+            'client_id' => 'required|is_not_unique[clients.id]'
+        ];
+        $messages = [
+            'client_id' => [
+                'required' => 'É obrigatório associar o projeto a um cliente.',
+                'is_not_unique' => 'O cliente selecionado é inválido.'
+            ]
+        ];
+
+        // 2. Executa a validação
+        if (!$this->validate($rules, $messages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // 3. Se a validação passar, salva o projeto
         $projectModel = new ProjectModel();
         $data = $this->request->getPost();
-
-        // Garante que um client_id vazio seja salvo como NULL
-        if (empty($data['client_id'])) {
-            $data['client_id'] = null;
-        }
 
         if ($projectModel->save($data)) {
             $projectId = $projectModel->getInsertID();
@@ -154,11 +167,9 @@ class ProjectsController extends BaseController
 
             // Busca os dados completos do cliente, se houver um associado
             $clientData = null;
-            if ($newProject->client_id) {
-                $clientData = (new ClientModel())->find($newProject->client_id);
-            }
+            $clientData = (new ClientModel())->find($newProject->client_id);
 
-            // Dispara o Webhook para o N8N
+            // Dispara o Webhook para o N8N (agora com a certeza de que há um cliente)
             dispararWebhookN8N('projeto-criado', [
                 'event'   => 'project.created',
                 'project' => $newProject, // Objeto do projeto
@@ -173,7 +184,7 @@ class ProjectsController extends BaseController
             return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Projeto criado com sucesso.');
         }
 
-        return redirect()->back()->withInput()->with('errors', $projectModel->errors());
+        return redirect()->back()->withInput()->with('error', 'Ocorreu um erro ao salvar o projeto.');
     }
 
     /**
@@ -571,20 +582,23 @@ class ProjectsController extends BaseController
                 // Dispara o Webhook para o N8N
                 $project = (new ProjectModel())->find($projectId);
                 $user = (new UserModel())->find($userId);
-                
-                $userPayload = [
-                    'id'            => $user->id,
-                    'name'          => $user->name,
-                    'email'         => $user->email,
-                    'slack_user_id' => $user->slack_user_id ?? null, // Inclui o ID do Slack se existir
-                ];
 
-                dispararWebhookN8N('novo-usuario-projeto', [
-                    'event'   => 'user.added.to.project',
-                    'project' => ['id' => $project->id, 'name' => $project->name],
-                    'user'    => $userPayload,
-                    'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
-                ]);
+                // Validação: Só dispara o webhook se o usuário tiver um ID do Slack
+                if (!empty($user->slack_user_id)) {
+                    $userPayload = [
+                        'id'            => $user->id,
+                        'name'          => $user->name,
+                        'email'         => $user->email,
+                        'slack_user_id' => $user->slack_user_id,
+                    ];
+
+                    dispararWebhookN8N('novo-usuario-projeto', [
+                        'event'   => 'user.added.to.project',
+                        'project' => ['id' => $project->id, 'name' => $project->name],
+                        'user'    => $userPayload,
+                        'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
+                    ]);
+                }
 
                 return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário associado com sucesso.')->with('active_tab', 'members');
             }
@@ -615,19 +629,22 @@ class ProjectsController extends BaseController
                 $project = (new ProjectModel())->find($projectId);
                 $user = (new UserModel())->find($userId);
 
-                $userPayload = [
-                    'id'            => $user->id,
-                    'name'          => $user->name,
-                    'email'         => $user->email,
-                    'slack_user_id' => $user->slack_user_id ?? null, // Inclui o ID do Slack se existir
-                ];
+                // Validação: Só dispara o webhook se o usuário tiver um ID do Slack
+                if (!empty($user->slack_user_id)) {
+                    $userPayload = [
+                        'id'            => $user->id,
+                        'name'          => $user->name,
+                        'email'         => $user->email,
+                        'slack_user_id' => $user->slack_user_id,
+                    ];
 
-                dispararWebhookN8N('usuario-removido-projeto', [
-                    'event'   => 'user.removed.from.project',
-                    'project' => ['id' => $project->id, 'name' => $project->name],
-                    'user'    => $userPayload,
-                    'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
-                ]);
+                    dispararWebhookN8N('usuario-removido-projeto', [
+                        'event'   => 'user.removed.from.project',
+                        'project' => ['id' => $project->id, 'name' => $project->name],
+                        'user'    => $userPayload,
+                        'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
+                    ]);
+                }
                 return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário desassociado com sucesso.')->with('active_tab', 'members');
             }
         }

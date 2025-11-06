@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskModel;
 use Gemini;
+use App\Models\SlackChannelLogModel;
 use App\Models\ProjectModel;
 use App\Models\UserModel;
 
@@ -39,7 +40,28 @@ class TasksController extends BaseController
         }
 
         if ($taskModel->save($data)) {
-            return redirect()->to('/admin/projects/' . $projectId)
+            $taskId = $taskModel->getInsertID();
+            $newTask = $taskModel->find($taskId);
+
+            // Validação: Só dispara o webhook se o projeto tiver um canal no Slack
+            $slackChannel = (new SlackChannelLogModel())->where('project_id', $newTask->project_id)->first();
+            if ($slackChannel) {
+                // Dispara o Webhook para o N8N
+                $project = (new ProjectModel())->find($newTask->project_id);
+                $actor = (new UserModel())->find(session()->get('user_id'));
+
+                // Gera a mensagem
+                $message = "A tarefa '{$newTask->title}' foi criada.";
+
+                dispararWebhookN8N('tarefa-atualizada', [
+                    'event'   => 'task.created',
+                    'message' => $message,
+                    'project' => $project,
+                    'task'    => $newTask,
+                    'actor'   => $actor,
+                ]);
+            }
+            return redirect()->to('/admin/projects/' . $newTask->project_id)
                              ->with('success', 'Tarefa criada com sucesso.')
                              ->with('active_tab', 'board');
         }
@@ -93,40 +115,44 @@ class TasksController extends BaseController
         }
 
         if ($taskModel->update($id, $data)) {
-            // Dispara o Webhook para o N8N
-            $updatedTask = $taskModel->find($id);
-            $project = (new ProjectModel())->find($task->project_id);
-            $actor = (new UserModel())->find(session()->get('user_id'));
+            // Validação: Só dispara o webhook se o projeto tiver um canal no Slack
+            $slackChannel = (new SlackChannelLogModel())->where('project_id', $task->project_id)->first();
+            if ($slackChannel) {
+                // Dispara o Webhook para o N8N
+                $updatedTask = $taskModel->find($id);
+                $project = (new ProjectModel())->find($task->project_id);
+                $actor = (new UserModel())->find(session()->get('user_id'));
 
-            // Gera a mensagem descritiva
-            $changes = [];
-            if ($task->title !== $updatedTask->title) {
-                $changes[] = "título alterado";
-            }
-            if ($task->status !== $updatedTask->status) {
-                $changes[] = "status alterado para '{$updatedTask->status}'";
-            }
-            if ($task->due_date !== $updatedTask->due_date) {
-                $newDate = $updatedTask->due_date ? date('d/m/Y', strtotime($updatedTask->due_date)) : 'nenhuma';
-                $changes[] = "data de entrega alterada para '{$newDate}'";
-            }
-            if ($task->user_id !== $updatedTask->user_id) {
-                $newUser = $updatedTask->user_id ? (new UserModel())->find($updatedTask->user_id)->name : 'ninguém';
-                $changes[] = "responsável alterado para '{$newUser}'";
-            }
-            if (empty($changes)) {
-                $message = "A tarefa '{$updatedTask->title}' foi atualizada.";
-            } else {
-                $message = "Na tarefa '{$updatedTask->title}', " . implode(', ', $changes) . ".";
-            }
+                // Gera a mensagem descritiva
+                $changes = [];
+                if ($task->title !== $updatedTask->title) {
+                    $changes[] = "título alterado";
+                }
+                if ($task->status !== $updatedTask->status) {
+                    $changes[] = "status alterado para '{$updatedTask->status}'";
+                }
+                if ($task->due_date !== $updatedTask->due_date) {
+                    $newDate = $updatedTask->due_date ? date('d/m/Y', strtotime($updatedTask->due_date)) : 'nenhuma';
+                    $changes[] = "data de entrega alterada para '{$newDate}'";
+                }
+                if ($task->user_id !== $updatedTask->user_id) {
+                    $newUser = $updatedTask->user_id ? (new UserModel())->find($updatedTask->user_id)->name : 'ninguém';
+                    $changes[] = "responsável alterado para '{$newUser}'";
+                }
+                if (empty($changes)) {
+                    $message = "A tarefa '{$updatedTask->title}' foi atualizada.";
+                } else {
+                    $message = "Na tarefa '{$updatedTask->title}', " . implode(', ', $changes) . ".";
+                }
 
-            dispararWebhookN8N('tarefa-atualizada', [
-                'event'   => 'task.updated',
-                'message' => $message,
-                'project' => $project,
-                'task'    => $updatedTask,
-                'actor'   => $actor,
-            ]);
+                dispararWebhookN8N('tarefa-atualizada', [
+                    'event'   => 'task.updated',
+                    'message' => $message,
+                    'project' => $project,
+                    'task'    => $updatedTask,
+                    'actor'   => $actor,
+                ]);
+            }
 
             return redirect()->to('/admin/projects/' . $updatedTask->project_id)
                              ->with('success', 'Tarefa atualizada com sucesso.')
@@ -154,20 +180,24 @@ class TasksController extends BaseController
         $projectId = $task->project_id ?? null;
 
         if ($taskModel->delete($id)) {
-            // Dispara o Webhook para o N8N
-            $project = (new ProjectModel())->find($task->project_id);
-            $actor = (new UserModel())->find(session()->get('user_id'));
+            // Validação: Só dispara o webhook se o projeto tiver um canal no Slack
+            $slackChannel = (new SlackChannelLogModel())->where('project_id', $task->project_id)->first();
+            if ($slackChannel) {
+                // Dispara o Webhook para o N8N
+                $project = (new ProjectModel())->find($task->project_id);
+                $actor = (new UserModel())->find(session()->get('user_id'));
 
-            // Gera a mensagem
-            $message = "A tarefa '{$task->title}' foi removida.";
+                // Gera a mensagem
+                $message = "A tarefa '{$task->title}' foi removida.";
 
-            dispararWebhookN8N('tarefa-atualizada', [
-                'event'   => 'task.deleted',
-                'message' => $message,
-                'project' => $project,
-                'task'    => $task, // Envia os dados da tarefa que foi removida
-                'actor'   => $actor,
-            ]);
+                dispararWebhookN8N('tarefa-atualizada', [
+                    'event'   => 'task.deleted',
+                    'message' => $message,
+                    'project' => $project,
+                    'task'    => $task, // Envia os dados da tarefa que foi removida
+                    'actor'   => $actor,
+                ]);
+            }
 
             return redirect()->to('/admin/projects/' . $projectId)
                              ->with('success', 'Tarefa removida com sucesso.')
@@ -338,21 +368,25 @@ class TasksController extends BaseController
             }
 
             if ($taskModel->updateBatch($updateData, 'id')) {
-                // Dispara o Webhook para a tarefa que foi movida
-                $movedTask = $taskModel->find($taskId);
-                $project = (new ProjectModel())->find($movedTask->project_id);
-                $actor = (new UserModel())->find(session()->get('user_id'));
+                // Validação: Só dispara o webhook se o projeto tiver um canal no Slack
+                $movedTask = $taskModel->find($taskId); // Pega a tarefa movida
+                $slackChannel = (new SlackChannelLogModel())->where('project_id', $movedTask->project_id)->first();
+                if ($slackChannel) {
+                    // Dispara o Webhook para a tarefa que foi movida
+                    $project = (new ProjectModel())->find($movedTask->project_id);
+                    $actor = (new UserModel())->find(session()->get('user_id'));
 
-                // Gera a mensagem
-                $message = "O status da tarefa '{$movedTask->title}' foi alterado para '{$newStatus}'.";
+                    // Gera a mensagem
+                    $message = "O status da tarefa '{$movedTask->title}' foi alterado para '{$newStatus}'.";
 
-                dispararWebhookN8N('tarefa-atualizada', [
-                    'event'   => 'task.updated',
-                    'message' => $message,
-                    'project' => $project,
-                    'task'    => $movedTask,
-                    'actor'   => $actor,
-                ]);
+                    dispararWebhookN8N('tarefa-atualizada', [
+                        'event'   => 'task.updated',
+                        'message' => $message,
+                        'project' => $project,
+                        'task'    => $movedTask,
+                        'actor'   => $actor,
+                    ]);
+                }
 
                 return $this->response->setJSON(['success' => true, 'message' => 'Quadro atualizado com sucesso.']);
             }
