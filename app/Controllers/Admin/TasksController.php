@@ -6,6 +6,8 @@ use App\Controllers\BaseController;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskModel;
 use Gemini;
+use App\Models\ProjectModel;
+use App\Models\UserModel;
 
 class TasksController extends BaseController
 {
@@ -73,7 +75,8 @@ class TasksController extends BaseController
     public function update($id = null)
     {
         $taskModel = new TaskModel();
-        $task = $taskModel->find($id);
+        // Usamos asNoTracking para ter uma cópia "congelada" dos dados antigos.
+        $task = $taskModel->asObject()->find($id);
 
         if (!$task) {
             return redirect()->back()->with('error', 'Tarefa não encontrada.');
@@ -90,11 +93,47 @@ class TasksController extends BaseController
         }
 
         if ($taskModel->update($id, $data)) {
-            return redirect()->to('/admin/projects/' . $task->project_id)
+            // Dispara o Webhook para o N8N
+            $updatedTask = $taskModel->find($id);
+            $project = (new ProjectModel())->find($task->project_id);
+            $actor = (new UserModel())->find(session()->get('user_id'));
+
+            // Gera a mensagem descritiva
+            $changes = [];
+            if ($task->title !== $updatedTask->title) {
+                $changes[] = "título alterado";
+            }
+            if ($task->status !== $updatedTask->status) {
+                $changes[] = "status alterado para '{$updatedTask->status}'";
+            }
+            if ($task->due_date !== $updatedTask->due_date) {
+                $newDate = $updatedTask->due_date ? date('d/m/Y', strtotime($updatedTask->due_date)) : 'nenhuma';
+                $changes[] = "data de entrega alterada para '{$newDate}'";
+            }
+            if ($task->user_id !== $updatedTask->user_id) {
+                $newUser = $updatedTask->user_id ? (new UserModel())->find($updatedTask->user_id)->name : 'ninguém';
+                $changes[] = "responsável alterado para '{$newUser}'";
+            }
+            if (empty($changes)) {
+                $message = "A tarefa '{$updatedTask->title}' foi atualizada.";
+            } else {
+                $message = "Na tarefa '{$updatedTask->title}', " . implode(', ', $changes) . ".";
+            }
+
+            dispararWebhookN8N('tarefa-atualizada', [
+                'event'   => 'task.updated',
+                'message' => $message,
+                'project' => $project,
+                'task'    => $updatedTask,
+                'actor'   => $actor,
+            ]);
+
+            return redirect()->to('/admin/projects/' . $updatedTask->project_id)
                              ->with('success', 'Tarefa atualizada com sucesso.')
                              ->with('active_tab', 'board');
         }
 
+        // Se a atualização falhar
         return redirect()->to('/admin/projects/' . $task->project_id)
                          ->withInput()->with('errors', $taskModel->errors())->with('active_tab', 'board');
     }
@@ -106,10 +145,33 @@ class TasksController extends BaseController
     {
         $taskModel = new TaskModel();
         $task = $taskModel->find($id);
+
+        // Se a tarefa não for encontrada, redireciona com erro.
+        if (!$task) {
+            return redirect()->back()->with('error', 'Tarefa não encontrada.');
+        }
+
         $projectId = $task->project_id ?? null;
 
         if ($taskModel->delete($id)) {
-            return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Tarefa removida com sucesso.')->with('active_tab', 'board');
+            // Dispara o Webhook para o N8N
+            $project = (new ProjectModel())->find($task->project_id);
+            $actor = (new UserModel())->find(session()->get('user_id'));
+
+            // Gera a mensagem
+            $message = "A tarefa '{$task->title}' foi removida.";
+
+            dispararWebhookN8N('tarefa-atualizada', [
+                'event'   => 'task.deleted',
+                'message' => $message,
+                'project' => $project,
+                'task'    => $task, // Envia os dados da tarefa que foi removida
+                'actor'   => $actor,
+            ]);
+
+            return redirect()->to('/admin/projects/' . $projectId)
+                             ->with('success', 'Tarefa removida com sucesso.')
+                             ->with('active_tab', 'board');
         }
 
         return redirect()->to('/admin/projects/' . $projectId)->with('error', 'Erro ao remover a tarefa.')->with('active_tab', 'board');
@@ -276,6 +338,22 @@ class TasksController extends BaseController
             }
 
             if ($taskModel->updateBatch($updateData, 'id')) {
+                // Dispara o Webhook para a tarefa que foi movida
+                $movedTask = $taskModel->find($taskId);
+                $project = (new ProjectModel())->find($movedTask->project_id);
+                $actor = (new UserModel())->find(session()->get('user_id'));
+
+                // Gera a mensagem
+                $message = "O status da tarefa '{$movedTask->title}' foi alterado para '{$newStatus}'.";
+
+                dispararWebhookN8N('tarefa-atualizada', [
+                    'event'   => 'task.updated',
+                    'message' => $message,
+                    'project' => $project,
+                    'task'    => $movedTask,
+                    'actor'   => $actor,
+                ]);
+
                 return $this->response->setJSON(['success' => true, 'message' => 'Quadro atualizado com sucesso.']);
             }
 

@@ -36,6 +36,14 @@
                     <input type="email" class="form-control" id="email" name="email" value="<?= old('email', $user->email ?? '') ?>" required>
                 </div>
 
+                <!-- Slack User ID -->
+                <div class="form-group mb-3">
+                    <label for="slack_user_id" class="form-label">ID do Slack</label>
+                    <input type="text" class="form-control" id="slack_user_id" name="slack_user_id"
+                           placeholder="Ex: U0123ABCDEF"
+                           value="<?= old('slack_user_id', $user->slack_user_id ?? '') ?>">
+                </div>
+
                 <div class="mb-3">
                     <label for="password" class="form-label">Senha</label>
                     <input type="password" class="form-control" id="password" name="password">

@@ -12,6 +12,7 @@
             <tr>
                 <th>Usuário</th>
                 <th>Email</th>
+                <th>ID do Slack</th>
                 <th class="text-center">Projetos</th>
                 <th class="text-center">Tarefas Abertas</th>
                 <th>Status</th>
@@ -21,7 +22,7 @@
         <tbody>
             <?php if (empty($users)): ?>
                 <tr>
-                    <td colspan="6" class="text-center">Nenhum usuário cadastrado.</td>
+                    <td colspan="7" class="text-center">Nenhum usuário cadastrado.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($users as $user): ?>
@@ -36,6 +37,7 @@
                         </div>
                     </td>
                     <td><?= esc($user->email) ?></td>
+                    <td class="align-middle"><?= esc($user->slack_user_id) ?></td>
                     <td class="text-center align-middle">
                         <span class="badge bg-info"><?= $project_counts[$user->id] ?? 0 ?></span>
                     </td>

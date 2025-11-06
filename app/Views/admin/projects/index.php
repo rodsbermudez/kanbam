@@ -39,6 +39,7 @@
                 <th>Nome</th>
                 <th>Descrição</th>
                 <th class="text-center" style="width: 15%;">Progresso</th>
+                <th class="text-center">Canal Slack</th>
                 <th>Membros</th>
             </tr>
         </thead>
@@ -78,6 +79,15 @@
                         </div>
                     <?php else: ?>
                         <span class="badge bg-secondary">0</span>
+                    <?php endif; ?>
+                </td>
+                <td class="text-center align-middle">
+                    <?php if (isset($slack_channels[$project->id])): ?>
+                        <span class="badge bg-dark"><?= esc($slack_channels[$project->id]) ?></span>
+                    <?php else: ?>
+                        <?php if (session()->get('is_admin')): ?>
+                            <a href="<?= site_url('admin/projects/' . $project->id . '/create-slack-channel') ?>" class="btn btn-sm btn-outline-primary" title="Solicitar criação de canal no Slack">Criar Canal</a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </td>
                 <td class="align-middle">

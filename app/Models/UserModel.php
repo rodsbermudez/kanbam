@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
 
-    protected $allowedFields    = ['name', 'initials', 'color', 'email', 'password', 'is_admin', 'is_active'];
+    protected $allowedFields    = ['name', 'initials', 'color', 'email', 'password', 'is_admin', 'is_active', 'slack_user_id'];
 
     // Dates
     protected $useTimestamps = true;

@@ -13,6 +13,7 @@ use App\Models\ProjectFileModel;
 use App\Models\ImportedReportModel;
 use App\Models\ProjectTypeModel;
 use App\Models\TaskNoteModel;
+use App\Models\SlackChannelLogModel;
 
 class ProjectsController extends BaseController
 {
@@ -53,6 +54,7 @@ class ProjectsController extends BaseController
 
         $projectTaskStats = [];
         $projectMembers = [];
+        $slackChannels = [];
 
         if (!empty($projects)) {
             $projectIds = array_map(fn($p) => $p->id, $projects);
@@ -84,6 +86,14 @@ class ProjectsController extends BaseController
             foreach ($membersResult as $member) {
                 $projectMembers[$member->project_id][] = $member;
             }
+
+            // 3. Busca os canais do Slack associados
+            $slackChannelModel = new SlackChannelLogModel();
+            $channelsResult = $slackChannelModel->whereIn('project_id', $projectIds)->findAll();
+            // Cria um mapa de project_id => channel_id
+            foreach ($channelsResult as $channel) {
+                $slackChannels[$channel->project_id] = $channel->channel_id;
+            }
         }
 
         // Busca a contagem de projetos para as abas
@@ -94,6 +104,7 @@ class ProjectsController extends BaseController
             'projects'         => $projects,
             'search'           => $search,
             'project_task_stats' => $projectTaskStats,
+            'slack_channels'   => $slackChannels,
             'project_members'  => $projectMembers,
             'current_status'   => $status,
             'project_counts'   => $projectCounts,
@@ -138,17 +149,21 @@ class ProjectsController extends BaseController
         if ($projectModel->save($data)) {
             $projectId = $projectModel->getInsertID();
 
-            // Busca o projeto recém-criado com os dados do cliente para um payload mais completo
-            $newProject = $projectModel
-                ->select('projects.*, clients.name as client_name')
-                ->join('clients', 'clients.id = projects.client_id', 'left')
-                ->find($projectId);
+            // Busca o projeto recém-criado
+            $newProject = $projectModel->find($projectId);
+
+            // Busca os dados completos do cliente, se houver um associado
+            $clientData = null;
+            if ($newProject->client_id) {
+                $clientData = (new ClientModel())->find($newProject->client_id);
+            }
 
             // Dispara o Webhook para o N8N
             dispararWebhookN8N('projeto-criado', [
                 'event'   => 'project.created',
-                'project' => $newProject, // Envia o objeto completo do projeto
-                'actor'   => [
+                'project' => $newProject, // Objeto do projeto
+                'client'  => $clientData, // Objeto do cliente (ou null)
+                'actor'   => [ // Usuário que criou o projeto
                     'id'   => session()->get('user_id'),
                     'name' => session()->get('name')
                 ]
@@ -354,6 +369,42 @@ class ProjectsController extends BaseController
     }
 
     /**
+     * Dispara um webhook para o N8N solicitando a criação de um canal no Slack.
+     * Reutiliza a mesma lógica do evento 'projeto-criado'.
+     */
+    public function createSlackChannel($projectId)
+    {
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($projectId);
+
+        if (!$project) {
+            return redirect()->to('/admin/projects')->with('error', 'Projeto não encontrado.');
+        }
+
+        // Busca os dados completos do cliente, se houver um associado
+        $clientData = null;
+        if ($project->client_id) {
+            $clientData = (new ClientModel())->find($project->client_id);
+        }
+
+        // Dispara o Webhook para o N8N usando o mesmo evento de criação de projeto
+        dispararWebhookN8N('projeto-criado', [
+            'event'   => 'project.created', // O N8N pode tratar isso como "criar canal se não existir"
+            'project' => $project,
+            'client'  => $clientData,
+            'actor'   => [
+                'id'   => session()->get('user_id'),
+                'name' => session()->get('name')
+            ]
+        ]);
+
+        // Redireciona de volta para a lista de projetos com uma mensagem de sucesso
+        return redirect()->to('/admin/projects')
+                         ->with('success', "Solicitação para criar canal para o projeto '{$project->name}' foi enviada.");
+    }
+
+
+    /**
      * Exibe o formulário para editar um projeto.
      */
     public function edit($id)
@@ -520,17 +571,21 @@ class ProjectsController extends BaseController
                 // Dispara o Webhook para o N8N
                 $project = (new ProjectModel())->find($projectId);
                 $user = (new UserModel())->find($userId);
+                
+                $userPayload = [
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'email'         => $user->email,
+                    'slack_user_id' => $user->slack_user_id ?? null, // Inclui o ID do Slack se existir
+                ];
 
                 dispararWebhookN8N('novo-usuario-projeto', [
                     'event'   => 'user.added.to.project',
                     'project' => ['id' => $project->id, 'name' => $project->name],
-                    'user'    => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+                    'user'    => $userPayload,
                     'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
                 ]);
 
-                return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário associado com sucesso.')->with('active_tab', 'members');
-            }
-            if ($projectUserModel->save($data)) {
                 return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário associado com sucesso.')->with('active_tab', 'members');
             }
         }
@@ -556,6 +611,23 @@ class ProjectsController extends BaseController
             $db->table($projectUserModel->getTable())->where('id', $association->id)->delete();
 
             if ($db->affectedRows() > 0) {
+                // Dispara o Webhook para o N8N
+                $project = (new ProjectModel())->find($projectId);
+                $user = (new UserModel())->find($userId);
+
+                $userPayload = [
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'email'         => $user->email,
+                    'slack_user_id' => $user->slack_user_id ?? null, // Inclui o ID do Slack se existir
+                ];
+
+                dispararWebhookN8N('usuario-removido-projeto', [
+                    'event'   => 'user.removed.from.project',
+                    'project' => ['id' => $project->id, 'name' => $project->name],
+                    'user'    => $userPayload,
+                    'actor'   => ['id' => session()->get('user_id'), 'name' => session()->get('name')]
+                ]);
                 return redirect()->to('/admin/projects/' . $projectId)->with('success', 'Usuário desassociado com sucesso.')->with('active_tab', 'members');
             }
         }

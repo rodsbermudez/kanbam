@@ -59,6 +59,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
         // Rotas específicas de projeto (devem vir antes do 'resource' para ter prioridade)
+        $routes->get('projects/(:num)/create-slack-channel', 'Admin\ProjectsController::createSlackChannel/$1');
         $routes->get('projects/(:num)/delete', 'Admin\ProjectsController::delete/$1');
         $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
         $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
