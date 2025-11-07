@@ -35,7 +35,7 @@ abstract class BaseController extends Controller
      *
      * @var list<string>
      */
-    protected $helpers = ['auth', 'user'];
+    protected $helpers = ['auth', 'user', 'version'];
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
@@ -56,6 +56,9 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = \Config\Services::session();
         $this->session = \Config\Services::session();
+
+        // Adiciona a versão da aplicação aos dados globais da view
+        $this->viewData['app_version'] = get_latest_app_version();
 
         $this->loadGlobalData();
         \Config\Services::renderer()->setData($this->viewData);

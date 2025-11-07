@@ -1,5 +1,5 @@
 <footer class="container-fluid text-center text-muted small py-3 mt-4">
-    Kanban v<?= config('App')->version ?? '1.0.0' ?>
+    Projetos Patropi v<?= $app_version ?? getenv('APP_VERSION') ?? '1.0.0' ?>
 </footer>
 
 <?= $this->include('partials/theme_switcher') ?>

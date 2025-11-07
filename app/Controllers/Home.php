@@ -8,4 +8,10 @@ class Home extends BaseController
     {
         return view('welcome_message');
     }
+
+    public function changelog(): string
+    {
+        // A variável $app_version já é injetada globalmente pelo BaseController
+        return view('changelog');
+    }
 }

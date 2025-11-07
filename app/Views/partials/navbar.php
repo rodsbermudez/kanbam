@@ -24,6 +24,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('admin/project-type') ?>">Tipos de Projeto</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('changelog') ?>">Atualizações</a>
+                </li>
                 <?php endif; ?>
             </ul>
 
@@ -45,7 +48,7 @@
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i> <?= esc(session()->get('user_name')) ?>
+                        <i class="bi bi-person-circle"></i> <?= esc(session()->get('name')) ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="<?= site_url('logout') ?>">Sair</a></li>

@@ -40,6 +40,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('admin/projects', 'Admin\ProjectsController::index');
     $routes->get('admin/projects/(:num)', 'Admin\ProjectsController::show/$1');
 
+    // app/Config/Routes.php
+    $routes->get('/changelog', 'Home::changelog'); // Ou um controller específico se preferir
+
+
     // Grupo de rotas de ADMINISTRAÇÃO (requer permissão de admin)
     $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
         // Gerenciamento de Usuários
