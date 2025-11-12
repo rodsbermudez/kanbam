@@ -4,6 +4,12 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.4' => [
+        'date' => '2024-07-26',
+        'items' => [
+            '<strong>Projetos:</strong> Adicionada a funcionalidade "Adiar Início do Projeto", que permite reagendar todas as tarefas de um projeto com base em uma nova data de início.',
+        ]
+    ],
     '1.1.3' => [
         'date' => '2024-07-26',
         'items' => [

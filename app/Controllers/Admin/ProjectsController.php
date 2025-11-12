@@ -710,4 +710,67 @@ class ProjectsController extends BaseController
 
         return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Erro ao atualizar a visibilidade do projeto.']);
     }
+
+    /**
+     * Adia todas as tarefas de um projeto com base em uma nova data de início.
+     */
+    public function postpone($projectId)
+    {
+        $newStartDateStr = $this->request->getPost('new_start_date');
+
+        // Validação da data
+        if (empty($newStartDateStr) || !\DateTime::createFromFormat('Y-m-d', $newStartDateStr)) {
+            return redirect()->back()->with('error', 'Data de início inválida.');
+        }
+
+        $taskModel = new TaskModel();
+        $db = \Config\Database::connect();
+
+        // Inicia a transação
+        $db->transStart();
+
+        // Encontra a primeira tarefa com data de vencimento para usar como referência
+        $firstTask = $taskModel->where('project_id', $projectId)
+                               ->where('due_date IS NOT NULL')
+                               ->orderBy('due_date', 'ASC')
+                               ->first();
+
+        if (!$firstTask) {
+            return redirect()->back()->with('error', 'Não é possível adiar. O projeto não possui tarefas com data de entrega para servirem de referência.');
+        }
+
+        // Calcula a diferença de dias
+        $oldStartDate = new \DateTime($firstTask->due_date);
+        $newStartDate = new \DateTime($newStartDateStr);
+        $interval = $oldStartDate->diff($newStartDate);
+        $daysToShift = $interval->invert ? -$interval->days : $interval->days;
+
+        // Busca todas as tarefas do projeto que têm data de entrega
+        $allTasks = $taskModel->where('project_id', $projectId)
+                              ->where('due_date IS NOT NULL')
+                              ->findAll();
+
+        $updateBatchData = [];
+        foreach ($allTasks as $task) {
+            $currentDueDate = new \DateTime($task->due_date);
+            $currentDueDate->modify("{$daysToShift} days");
+            $updateBatchData[] = [
+                'id' => $task->id,
+                'due_date' => $currentDueDate->format('Y-m-d')
+            ];
+        }
+
+        // Atualiza todas as tarefas em uma única operação
+        if (!empty($updateBatchData)) {
+            $taskModel->updateBatch($updateBatchData, 'id');
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Ocorreu um erro ao adiar as tarefas do projeto.');
+        }
+
+        return redirect()->to('admin/projects/' . $projectId)->with('success', 'Projeto adiado com sucesso! Todas as tarefas foram reagendadas.');
+    }
 }

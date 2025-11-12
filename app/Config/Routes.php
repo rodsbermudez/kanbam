@@ -67,6 +67,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('projects/(:num)/delete', 'Admin\ProjectsController::delete/$1');
         $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
         $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
+        $routes->post('projects/(:num)/postpone', 'Admin\ProjectsController::postpone/$1');
         $routes->post('projects/(:num)/kanban-settings', 'Admin\ProjectsController::updateKanbanSettings/$1');
         $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
         $routes->post('projects/(:num)/documents/reorder', 'Admin\ProjectsController::reorderDocuments/$1');

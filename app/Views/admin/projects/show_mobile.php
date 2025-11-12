@@ -62,6 +62,8 @@
                         <i class="bi <?= $toggleIcon ?> me-2"></i><?= $toggleText ?>
                     </a>
                 </li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#postponeProjectModal"><i class="bi bi-calendar-plus me-2"></i>Adiar Início</a>
+                </li>
                 <li><a class="dropdown-item text-danger" href="<?= site_url('admin/projects/' . $project->id . '/delete') ?>" onclick="return confirm('Tem certeza que deseja remover este projeto?');"><i class="bi bi-trash me-2"></i>Remover Projeto</a></li>
             </ul>
         </div>

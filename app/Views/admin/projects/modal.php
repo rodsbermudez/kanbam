@@ -402,3 +402,29 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Adiar Início do Projeto -->
+<div class="modal fade" id="postponeProjectModal" tabindex="-1" aria-labelledby="postponeProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="postponeProjectModalLabel">Adiar Início do Projeto</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= site_url('admin/projects/' . $project->id . '/postpone') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <p>Selecione a nova data para a <strong>primeira tarefa</strong> do projeto. Todas as outras tarefas serão deslocadas proporcionalmente.</p>
+                    <div class="mb-3">
+                        <label for="new_start_date" class="form-label">Nova Data de Início</label>
+                        <input type="date" class="form-control" id="new_start_date" name="new_start_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adiar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
