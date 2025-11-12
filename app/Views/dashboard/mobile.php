@@ -9,12 +9,18 @@
         </div>
     </div>
     <?php
-    // Separação das tarefas atrasadas em grupos
+    // Cria um mapa de IDs de projetos ativos para facilitar a filtragem das tarefas.
+    $active_project_ids = array_flip(array_map(fn($p) => $p->id, $projects));
+
+    // Filtra as tarefas atrasadas para incluir apenas as de projetos ativos.
+    $active_overdue_tasks = array_filter($overdue_tasks, fn($task) => isset($active_project_ids[$task->project_id]));
+
+    // Separação das tarefas atrasadas (já filtradas) em grupos.
     $overdue_completed_tasks = [];
     $overdue_with_client_tasks = [];
     $overdue_other_tasks = [];
 
-    foreach ($overdue_tasks as $task) {
+    foreach ($active_overdue_tasks as $task) {
         if ($task->status === 'concluída') {
             $overdue_completed_tasks[] = $task;
         } elseif (in_array($task->status, ['com cliente', 'aprovação'])) {
@@ -93,13 +99,17 @@
                 <h5 class="mb-0 h6"><i class="bi bi-clock-history me-2"></i>Próximas Tarefas</h5>
             </div>
             <div class="card-body p-0">
-                <?php if (empty($upcoming_tasks)): ?>
+                <?php
+                    // Filtra as próximas tarefas para incluir apenas as de projetos ativos.
+                    $active_upcoming_tasks = array_filter($upcoming_tasks, fn($task) => isset($active_project_ids[$task->project_id]));
+                ?>
+                <?php if (empty($active_upcoming_tasks)): ?>
                     <div class="p-3 text-center text-muted small">
                         Nenhuma tarefa com vencimento próximo.
                     </div>
                 <?php else: ?>
                     <ul class="list-group list-group-flush">
-                        <?php foreach ($upcoming_tasks as $task): ?>
+                        <?php foreach ($active_upcoming_tasks as $task): ?>
                             <li class="list-group-item">
                                 <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="text-decoration-none d-block">
                                     <strong><?= esc($task->title) ?></strong>

@@ -4,6 +4,12 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.3' => [
+        'date' => '2024-07-26',
+        'items' => [
+            '<strong>Dashboard:</strong> As tarefas de projetos concluídos foram removidas de todos os quadros do dashboard (desktop e mobile).',
+        ]
+    ],
     '1.1.2' => [
         'date' => '2024-07-26',
         'items' => [
