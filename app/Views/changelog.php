@@ -4,6 +4,14 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.5' => [
+        'date' => '2024-07-26',
+        'items' => [
+            '<strong>Integração:</strong> Criado um endpoint (`/reports/daily-summary`) para gerar resumos diários de tarefas por usuário, destinado a automações com n8n e Slack.',
+            '<strong>Correção:</strong> Corrigido um erro que ocorria ao atualizar tarefas em projetos que não possuíam um canal do Slack configurado.',
+            '<strong>Ajuste:</strong> A estrutura do JSON do relatório diário foi ajustada para agrupar os usuários sob uma chave "users".',
+        ]
+    ],
     '1.1.4' => [
         'date' => '2024-07-26',
         'items' => [

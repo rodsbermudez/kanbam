@@ -115,11 +115,12 @@ class TasksController extends BaseController
         }
 
         if ($taskModel->update($id, $data)) {
+            // Busca a tarefa atualizada para usar nos webhooks e no redirecionamento.
+            $updatedTask = $taskModel->find($id);
+
             // Validação: Só dispara o webhook se o projeto tiver um canal no Slack
             $slackChannel = (new SlackChannelLogModel())->where('project_id', $task->project_id)->first();
             if ($slackChannel) {
-                // Dispara o Webhook para o N8N
-                $updatedTask = $taskModel->find($id);
                 $project = (new ProjectModel())->find($task->project_id);
                 $actor = (new UserModel())->find(session()->get('user_id'));
 

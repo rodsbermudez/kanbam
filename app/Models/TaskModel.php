@@ -117,6 +117,72 @@ class TaskModel extends Model
     }
 
     /**
+     * Busca tarefas de um usuário com vencimento em uma data específica.
+     *
+     * @param int    $userId ID do usuário.
+     * @param string $date   Data no formato 'Y-m-d'.
+     * @return array
+     */
+    public function getTasksForDate($userId, $date)
+    {
+        return $this->select('tasks.title, tasks.due_date, tasks.status, projects.name as project_name, projects.id as project_id')
+                    ->join('projects', 'projects.id = tasks.project_id')
+                    ->where('tasks.user_id', $userId)
+                    ->where('tasks.due_date', $date)
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
+                    ->where('projects.status', 'active') // Apenas de projetos ativos
+                    ->orderBy('projects.name', 'ASC')
+                    ->findAll();
+    }
+
+    /**
+     * Busca tarefas atrasadas de um usuário, com a opção de excluir certos status.
+     *
+     * @param int   $userId         ID do usuário.
+     * @param array $excludedStatus Lista de status a serem ignorados.
+     * @return array
+     */
+    public function getFilteredOverdueTasks($userId, array $excludedStatus = [])
+    {
+        $today = date('Y-m-d');
+
+        $builder = $this->select('tasks.title, tasks.due_date, tasks.status, projects.name as project_name, projects.id as project_id')
+                        ->join('projects', 'projects.id = tasks.project_id')
+                        ->where('tasks.user_id', $userId)
+                        ->where('tasks.due_date <', $today)
+                        ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
+                        ->where('projects.status', 'active'); // Apenas de projetos ativos
+
+        if (!empty($excludedStatus)) {
+            $builder->whereNotIn('tasks.status', $excludedStatus);
+        }
+
+        return $builder->orderBy('tasks.due_date', 'ASC')->findAll();
+    }
+
+    /**
+     * Busca tarefas de um usuário que vencem nos próximos X dias (a partir de amanhã).
+     *
+     * @param int $userId ID do usuário.
+     * @param int $days   Número de dias no futuro.
+     * @return array
+     */
+    public function getUpcomingTasks($userId, $days = 7)
+    {
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+        $dateLimit = date('Y-m-d', strtotime("+$days days"));
+
+        return $this->select('tasks.title, tasks.due_date, tasks.status, projects.name as project_name, projects.id as project_id')
+                    ->join('projects', 'projects.id = tasks.project_id')
+                    ->where('tasks.user_id', $userId)
+                    ->where('tasks.due_date >=', $tomorrow)
+                    ->where('tasks.due_date <=', $dateLimit)
+                    ->whereNotIn('tasks.status', ['concluída', 'cancelada'])
+                    ->where('projects.status', 'active') // Apenas de projetos ativos
+                    ->orderBy('tasks.due_date', 'ASC')->findAll();
+    }
+
+    /**
      * Busca tarefas de um cliente que vencem nos próximos X dias (não inclui atrasadas).
      *
      * @param int $clientId ID do cliente.

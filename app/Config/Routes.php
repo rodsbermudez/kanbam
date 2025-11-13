@@ -18,6 +18,9 @@ $routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) 
     $routes->get('files/(:num)/download', 'ClientPortalController::downloadFile/$1');
 });
 
+// --- Rotas para Relatórios Externos (n8n, etc.) ---
+$routes->get('reports/daily-summary', 'ExternalReportController::dailyUserSummary');
+
 // --- Rotas de Autenticação (Admin/Equipe) ---
 $routes->get('/', static fn () => redirect()->to('login')); // Rota principal redireciona para a página de login
 
