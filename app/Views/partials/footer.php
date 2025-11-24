@@ -38,7 +38,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentTheme = localStorage.getItem('kanban_theme') || 'pulse';
 
     function applyTheme(themeName) {
-        const themeUrl = `https://bootswatch.com/5/${themeName}/bootstrap.min.css`;
+        let themeUrl;
+        if (themeName.startsWith('http')) {
+            themeUrl = themeName;
+        } else {
+            themeUrl = `https://bootswatch.com/5/${themeName}/bootstrap.min.css`;
+        }
         themeLink.setAttribute('href', themeUrl);
         localStorage.setItem('kanban_theme', themeName);
     }

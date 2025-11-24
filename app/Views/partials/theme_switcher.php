@@ -8,5 +8,8 @@
         <li><a class="dropdown-item" href="#" data-theme="pulse">Pulse (Padrão)</a></li>
         <li><a class="dropdown-item" href="#" data-theme="cosmo">Cosmo</a></li>
         <li><a class="dropdown-item" href="#" data-theme="superhero">Super hero</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="flatly">Flatly</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="morph">Morph</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="sandstone">Sandstone</a></li>
     </ul>
 </div>
