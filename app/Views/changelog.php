@@ -7,6 +7,7 @@ $changelog = [
     '1.1.6' => [
         'date' => '2025-11-23',
         'items' => [
+            '<strong>Sidebar de Tarefas:</strong> Reformulada para exibir tarefas em abas (Atrasadas, Próximas, Aguardando Cliente) e notificar apenas sobre tarefas com atraso real.',
             '<strong>Layout:</strong> Ajustes gerais no layout para melhorar a consistência visual com os novos temas.',
             '<strong>Temas:</strong> Adicionados 2 novos temas: Cosmo e Superhero.',
             '<strong>Temas:</strong> Removidos 4 temas para simplificar a seleção.',

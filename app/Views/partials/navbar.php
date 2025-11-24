@@ -41,9 +41,11 @@
                     <!-- Due Tasks Sidebar Trigger -->
                     <button class="nav-link position-relative" type="button" id="open-due-tasks-sidebar" title="Tarefas Próximas" style="background: transparent; border: none;">
                         <i class="bi bi-bell"></i>
-                        <span id="due-tasks-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
-                            <!-- Count will be inserted here by JS -->
-                        </span>
+                        <?php if (isset($sidebar_overdue_count) && $sidebar_overdue_count > 0): ?>
+                            <span id="due-tasks-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <?= $sidebar_overdue_count ?>
+                            </span>
+                        <?php endif; ?>
                     </button>
                 </li>
                 <li class="nav-item dropdown">

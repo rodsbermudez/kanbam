@@ -79,6 +79,40 @@ abstract class BaseController extends Controller
                 'não iniciadas', 'em desenvovimento', 'aprovação', 'com cliente',
                 'ajustes', 'aprovada', 'implementada', 'concluída', 'cancelada',
             ];
+
+            // Carrega dados de tarefas para a sidebar
+            $userId = session()->get('user_id');
+            if ($userId) {
+                $taskModel = new \App\Models\TaskModel();
+
+                // Busca projetos ativos do usuário para filtrar as tarefas
+                $active_projects = $projectModel->getProjectsForUser($userId);
+                $active_project_ids = array_flip(array_map(fn($p) => $p->id, $active_projects));
+
+                // Filtra tarefas futuras e atrasadas
+                $upcoming_tasks = $taskModel->getUpcomingTasksForUser($userId, 7);
+                $overdue_tasks = $taskModel->getOverdueTasksForUser($userId);
+                
+                $this->viewData['sidebar_upcoming'] = array_filter($upcoming_tasks, fn($task) => isset($active_project_ids[$task->project_id]));
+
+                $active_overdue_tasks = array_filter($overdue_tasks, fn($task) => isset($active_project_ids[$task->project_id]));
+
+                // Separa tarefas atrasadas em categorias
+                $overdue_with_client = [];
+                $overdue_other = [];
+
+                foreach ($active_overdue_tasks as $task) {
+                    if (in_array($task->status, ['com cliente', 'aprovação'])) {
+                        $overdue_with_client[] = $task;
+                    } else {
+                        $overdue_other[] = $task;
+                    }
+                }
+
+                $this->viewData['sidebar_overdue_other'] = $overdue_other;
+                $this->viewData['sidebar_overdue_client'] = $overdue_with_client;
+                $this->viewData['sidebar_overdue_count'] = count($overdue_other);
+            }
         }
     }
 }
