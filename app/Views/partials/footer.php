@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Lógica para o Seletor de Tema ---
     const themeLink = document.getElementById('bootstrap-theme');
     const themeSwitcher = document.querySelector('.theme-switcher');
-    const currentTheme = localStorage.getItem('kanban_theme') || 'pulse';
+    const currentTheme = localStorage.getItem('kanban_theme') || 'sandstone';
 
-    function applyTheme(themeName) {
+    function applyTheme(themeName, themeType = 'light') {
         let themeUrl;
         if (themeName.startsWith('http')) {
             themeUrl = themeName;
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         themeLink.setAttribute('href', themeUrl);
         localStorage.setItem('kanban_theme', themeName);
+        localStorage.setItem('kanban_theme_type', themeType);
     }
 
     if (themeSwitcher) {
@@ -54,14 +55,16 @@ document.addEventListener('DOMContentLoaded', function () {
             if (themeItem) {
                 e.preventDefault();
                 const themeName = themeItem.dataset.theme;
-                applyTheme(themeName);
+                const themeType = themeItem.dataset.themeType || 'light';
+                applyTheme(themeName, themeType);
             }
         });
     }
 
     // Aplica o tema salvo ao carregar a página
-    if (currentTheme !== 'pulse') {
-        applyTheme(currentTheme);
+    if (currentTheme !== 'sandstone') {
+        const currentThemeType = localStorage.getItem('kanban_theme_type') || 'light';
+        applyTheme(currentTheme, currentThemeType);
     }
 
     // --- Lógica para a Sidebar de Tarefas Próximas ---
