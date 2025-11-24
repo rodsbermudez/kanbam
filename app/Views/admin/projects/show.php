@@ -2,6 +2,9 @@
 <?= $this->include('partials/navbar') ?>
 
 <style>
+#column-width-selector .dropdown-item.active {
+    color: #000 !important;
+}
 /* Estilos para o Cronograma Semanal */
 .month-header {
     font-size: 1.75rem;

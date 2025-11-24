@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Lógica para o Seletor de Tema ---
     const themeLink = document.getElementById('bootstrap-theme');
     const themeSwitcher = document.querySelector('.theme-switcher');
-    const currentTheme = localStorage.getItem('kanban_theme') || 'slate';
+    const currentTheme = localStorage.getItem('kanban_theme') || 'pulse';
 
     function applyTheme(themeName) {
         const themeUrl = `https://bootswatch.com/5/${themeName}/bootstrap.min.css`;
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Aplica o tema salvo ao carregar a página
-    if (currentTheme !== 'slate') {
+    if (currentTheme !== 'pulse') {
         applyTheme(currentTheme);
     }
 

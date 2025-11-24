@@ -4,6 +4,14 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.6' => [
+        'date' => '2025-11-23',
+        'items' => [
+            '<strong>Layout:</strong> Ajustes gerais no layout para melhorar a consistência visual com os novos temas.',
+            '<strong>Temas:</strong> Adicionados 2 novos temas: Cosmo e Superhero.',
+            '<strong>Temas:</strong> Removidos 4 temas para simplificar a seleção.',
+        ]
+    ],
     '1.1.5' => [
         'date' => '2024-07-26',
         'items' => [

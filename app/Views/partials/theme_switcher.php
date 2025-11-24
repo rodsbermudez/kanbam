@@ -5,12 +5,8 @@
     </button>
     <ul class="dropdown-menu">
         <li><h6 class="dropdown-header">Escolha um Tema</h6></li>
-        <li><a class="dropdown-item" href="#" data-theme="slate">Slate (Padrão)</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="darkly">Darkly</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="flatly">Flatly</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="lumen">Lumen</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="minty">Minty</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="pulse">Pulse</a></li>
-        <li><a class="dropdown-item" href="#" data-theme="sandstone">Sandstone</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="pulse">Pulse (Padrão)</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="cosmo">Cosmo</a></li>
+        <li><a class="dropdown-item" href="#" data-theme="superhero">Super hero</a></li>
     </ul>
 </div>

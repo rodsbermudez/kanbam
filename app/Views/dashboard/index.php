@@ -1,6 +1,12 @@
 <?= $this->include('partials/header') ?>
 <?= $this->include('partials/navbar') ?>
 
+<style>
+    .card-header {
+        border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0 !important;
+    }
+</style>
+
 <main class="container mt-6">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -87,16 +93,13 @@
                         <?php endif; ?>
                         <!-- Grupo: Outras Tarefas Atrasadas -->
                         <?php if (!empty($overdue_other_tasks)): ?>
-                            <div class="p-3 bg-light <?= !empty($overdue_completed_tasks) ? 'border-top' : '' ?>">
-                                <h6 class="mb-0 text-muted small">Outras Tarefas Atrasadas</h6>
-                            </div>
                             <div class="list-group list-group-flush">
                                 <?php foreach ($overdue_other_tasks as $task): ?>
                                     <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
                                     <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
                                         <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1 text-danger"><?= esc($task->title) ?></h6>
-                                            <small class="text-danger">Venceu em: <?= date('d/m/Y', strtotime($task->due_date)) ?></small> 
+                                            <h6 class="mb-1"><?= esc($task->title) ?></h6>
+                                            <small>Venceu em: <?= date('d/m/Y', strtotime($task->due_date)) ?></small> 
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mt-1">
                                             <p class="mb-0 text-muted small"> 

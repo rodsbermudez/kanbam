@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'Projetos') ?> - Patropi Comunica</title>
-    <link id="bootstrap-theme" href="https://bootswatch.com/5/slate/bootstrap.min.css" rel="stylesheet">
+    <link id="bootstrap-theme" href="https://bootswatch.com/5/pulse/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -12,7 +12,7 @@
         /* 
         Cores personalizadas comentadas para restaurar o tema original Superhero.
         Para reativar, basta remover os marcadores de comentário '/*' e '* /'.
-        
+        */
         :root {
             --bs-primary: #ed1e64;
             --bs-primary-rgb: 237, 30, 100;
@@ -41,7 +41,6 @@
             --bs-link-color: #ed1e64;
             --bs-link-hover-color: #c41853;
         }
-        */
 
         /* Custom spacing utility */
         .mt-6 {
@@ -147,12 +146,13 @@
         }
         .kanban-column {
             min-height: 50vh;
-            background-color: var(--bs-dark);
+            border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+            box-shadow: 5px 5px 10px rgba(55,94,148,.2),-5px -5px 10px rgba(255,255,255,.4);
             border-radius: 0.5rem;
             padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 2rem;
             white-space: normal;
         }
         .kanban-board.kanban-width-compact .kanban-column { flex: 0 0 300px; max-width: 300px; }
@@ -164,7 +164,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.9rem;
-            color: var(--bs-light);
         }
         .kanban-cards {
             flex-grow: 1;
