@@ -9,7 +9,7 @@
         const themeSwitcher = document.getElementById('clientThemeSwitcher');
         // O tema padrão para o cliente é 'sandstone'
         const storageKey = 'kanban_theme_client';
-        const defaultTheme = 'pulse';
+        const defaultTheme = 'sandstone';
         const currentTheme = localStorage.getItem(storageKey) || defaultTheme;
 
         function applyTheme(themeName) {

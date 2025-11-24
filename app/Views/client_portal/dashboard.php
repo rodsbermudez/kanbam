@@ -100,10 +100,8 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-dark w-100" aria-labelledby="themeDropdown" id="clientThemeSwitcher">
                 <li><h6 class="dropdown-header">Escolha um Tema</h6></li>
-                <li><a class="dropdown-item" href="#" data-theme="pulse">Pulse (Padrão)</a></li>
-                <li><a class="dropdown-item" href="#" data-theme="sandstone">Sandstone</a></li>
-                <li><a class="dropdown-item" href="#" data-theme="flatly">Flatly</a></li>
-                <li><a class="dropdown-item" href="#" data-theme="lumen">Lumen</a></li>
+                <li><a class="dropdown-item" href="#" data-theme="sandstone">Tema Claro</a></li>
+                <li><a class="dropdown-item" href="#" data-theme="superhero">Tema Escuro</a></li>
             </ul>
         </div>
     </div>
