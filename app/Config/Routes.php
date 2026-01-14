@@ -43,6 +43,43 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('admin/projects', 'Admin\ProjectsController::index');
     $routes->get('admin/projects/(:num)', 'Admin\ProjectsController::show/$1');
 
+    // Rotas de Ação em Projetos (Acessíveis para membros)
+    $routes->group('admin', function($routes) {
+        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1');
+        $routes->post('projects/(:num)/tasks/save-ai', 'Admin\TasksController::saveAIGeneratedTasks/$1');
+        $routes->post('projects/(:num)/tasks/generate-ai', 'Admin\TasksController::generateWithAI/$1');
+        $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
+        $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
+        $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
+        $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');
+        $routes->post('projects/(:num)/reports/import', 'Admin\ReportsController::import/$1');
+        $routes->post('projects/(:num)/documents/reorder', 'Admin\ProjectsController::reorderDocuments/$1');
+        
+        $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
+        $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
+        $routes->post('projects/(:num)/postpone', 'Admin\ProjectsController::postpone/$1');
+        $routes->post('projects/(:num)/kanban-settings', 'Admin\ProjectsController::updateKanbanSettings/$1');
+
+        $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
+        $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
+        $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
+        $routes->post('files/(:num)/toggle-client-visibility', 'Admin\ProjectFilesController::toggleClientVisibility/$1');
+
+        $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');
+        $routes->get('reports/(:num)', 'Admin\ReportsController::show/$1');
+        $routes->post('reports/(:num)/delete', 'Admin\ReportsController::delete/$1');
+
+        $routes->post('tasks/create', 'Admin\TasksController::create');
+        $routes->post('tasks/update-board', 'Admin\TasksController::updateBoard');
+        $routes->get('tasks/(:num)', 'Admin\TasksController::show/$1');
+        $routes->post('tasks/(:num)/update', 'Admin\TasksController::update/$1');
+        $routes->post('tasks/(:num)/delete', 'Admin\TasksController::delete/$1');
+        $routes->post('tasks/(:num)/notes', 'Admin\TaskNotesController::create/$1');
+        $routes->post('notes/(:num)/delete', 'Admin\TaskNotesController::delete/$1');
+        
+        $routes->get('projects/(:num)/members', 'Admin\ProjectsController::getProjectMembers/$1');
+    });
+
     // app/Config/Routes.php
     $routes->get('/changelog', 'Home::changelog'); // Ou um controller específico se preferir
 
@@ -68,45 +105,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         // Rotas específicas de projeto (devem vir antes do 'resource' para ter prioridade)
         $routes->get('projects/(:num)/create-slack-channel', 'Admin\ProjectsController::createSlackChannel/$1');
         $routes->get('projects/(:num)/delete', 'Admin\ProjectsController::delete/$1');
-        $routes->post('projects/(:num)/toggle-status', 'Admin\ProjectsController::toggleStatus/$1');
-        $routes->post('projects/(:num)/toggle-client-visibility', 'Admin\ProjectsController::toggleClientVisibility/$1');
-        $routes->post('projects/(:num)/postpone', 'Admin\ProjectsController::postpone/$1');
-        $routes->post('projects/(:num)/kanban-settings', 'Admin\ProjectsController::updateKanbanSettings/$1');
-        $routes->post('projects/(:num)/users', 'Admin\ProjectsController::addUser/$1');
-        $routes->post('projects/(:num)/documents/reorder', 'Admin\ProjectsController::reorderDocuments/$1');
-        $routes->post('projects/(:num)/users/(:num)/remove', 'Admin\ProjectsController::removeUser/$1/$2');
-        $routes->post('projects/(:num)/files', 'Admin\ProjectFilesController::create/$1');
-        $routes->post('projects/(:num)/links', 'Admin\ProjectFilesController::createLink/$1');
-        $routes->post('projects/(:num)/reports/import', 'Admin\ReportsController::import/$1');
-        $routes->post('projects/(:num)/tasks', 'Admin\TasksController::create/$1');
-        $routes->post('projects/(:num)/tasks/save-ai', 'Admin\TasksController::saveAIGeneratedTasks/$1');
-        $routes->post('projects/(:num)/tasks/generate-ai', 'Admin\TasksController::generateWithAI/$1');
         // Rota genérica 'resource' para as ações padrão (new, create, edit, update)
         $routes->resource('projects', ['controller' => 'Admin\ProjectsController', 'except' => ['index', 'show']]);
-
-        // Rotas para Arquivos de Projeto
-        $routes->get('files/(:num)/view', 'Admin\ProjectFilesController::view/$1');
-        $routes->get('files/(:num)/download', 'Admin\ProjectFilesController::download/$1');
-        $routes->post('files/(:num)/delete', 'Admin\ProjectFilesController::delete/$1');
-        $routes->post('files/(:num)/toggle-client-visibility', 'Admin\ProjectFilesController::toggleClientVisibility/$1');
-
-        // Rotas para Relatórios de Projeto
-        $routes->get('reports/available/(:num)', 'Admin\ReportsController::listAvailable/$1');
-        $routes->get('reports/(:num)', 'Admin\ReportsController::show/$1');
-        $routes->post('reports/(:num)/delete', 'Admin\ReportsController::delete/$1');
-
-        // Gerenciamento de Tarefas
-        $routes->post('tasks/create', 'Admin\TasksController::create'); // Nova rota global
-        $routes->post('tasks/update-board', 'Admin\TasksController::updateBoard');
-
-        // Rotas para buscar, atualizar e deletar uma tarefa específica
-        $routes->get('tasks/(:num)', 'Admin\TasksController::show/$1');
-        $routes->post('tasks/(:num)/update', 'Admin\TasksController::update/$1');
-        $routes->post('tasks/(:num)/delete', 'Admin\TasksController::delete/$1');
-
-        // Gerenciamento de Notas de Tarefas
-        $routes->post('tasks/(:num)/notes', 'Admin\TaskNotesController::create/$1');
-        $routes->post('notes/(:num)/delete', 'Admin\TaskNotesController::delete/$1');
 
         // Rotas para ações em massa
         $routes->post('tasks/bulk-update', 'Admin\TasksController::bulkUpdate');

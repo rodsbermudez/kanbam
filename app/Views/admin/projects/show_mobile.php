@@ -25,7 +25,6 @@
             <?php endif; ?>
         </div>
 
-        <?php if (session()->get('is_admin')): ?>
         <div class="dropdown">
             <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-gear-fill"></i> Ações
@@ -48,6 +47,7 @@
                         <?php endforeach; ?>
                      </ul>
                 </li>
+                <?php if (session()->get('is_admin')): ?>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="<?= site_url('admin/projects/' . $project->id . '/edit') ?>"><i class="bi bi-pencil-square me-2"></i>Editar Projeto</a></li>
                 <li>
@@ -61,26 +61,26 @@
                     <a class="dropdown-item <?= $toggleClass ?>" href="#" onclick="event.preventDefault(); document.getElementById('toggleStatusForm').submit();">
                         <i class="bi <?= $toggleIcon ?> me-2"></i><?= $toggleText ?>
                     </a>
+                    <?php endif; ?>
                 </li>
                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#postponeProjectModal"><i class="bi bi-calendar-plus me-2"></i>Adiar Início</a>
                 </li>
+                <?php if (session()->get('is_admin')): ?>
                 <li><a class="dropdown-item text-danger" href="<?= site_url('admin/projects/' . $project->id . '/delete') ?>" onclick="return confirm('Tem certeza que deseja remover este projeto?');"><i class="bi bi-trash me-2"></i>Remover Projeto</a></li>
+                <?php endif; ?>
             </ul>
         </div>
-        <?php endif; ?>
     </div>
 
     <!-- Navegação por Abas (Dropdown) -->
     <div class="mb-4">
         <select class="form-select" id="mobileTabSelector">
             <option value="board" <?= $active_tab === 'board' ? 'selected' : '' ?>>Quadro</option>
-            <?php if (session()->get('is_admin')): ?>
             <option value="members" <?= $active_tab === 'members' ? 'selected' : '' ?>>Membros</option>
             <option value="documents" <?= $active_tab === 'documents' ? 'selected' : '' ?>>Documentos</option>
             <option value="files" <?= $active_tab === 'files' ? 'selected' : '' ?>>Arquivos</option>
             <option value="reports" <?= $active_tab === 'reports' ? 'selected' : '' ?>>Relatórios</option>
             <option value="timeline" <?= $active_tab === 'timeline' ? 'selected' : '' ?>>Cronograma</option>
-            <?php endif; ?>
         </select>
     </div>
 

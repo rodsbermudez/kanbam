@@ -96,7 +96,6 @@
                 </div>
                 <p class="text-muted mb-0"><?= esc($project->description) ?></p>
             </div>
-            <?php if (session()->get('is_admin')): ?>
             <div id="main-actions" class="d-flex align-items-center gap-3 flex-wrap">
                 <!-- Ações do Quadro -->
                 <div id="board-actions-group" class="btn-group" role="group" aria-label="Ações do Quadro">
@@ -143,6 +142,7 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
+                            <?php if (session()->get('is_admin')): ?>
                             <a class="dropdown-item" href="<?= site_url('admin/projects/' . $project->id . '/edit') ?>"><i class="bi bi-pencil-square me-2"></i>Editar</a>
                         </li>
                         <li>
@@ -156,12 +156,15 @@
                             <a class="dropdown-item <?= $toggleClass ?>" href="#" onclick="event.preventDefault(); document.getElementById('toggleStatusForm').submit();">
                                 <i class="bi <?= $toggleIcon ?> me-2"></i><?= $toggleText ?>
                             </a>
+                            <?php endif; ?>
                         </li>
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#postponeProjectModal"><i class="bi bi-calendar-plus me-2"></i>Adiar Início do Projeto</a>
                         </li>
+                        <?php if (session()->get('is_admin')): ?>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="<?= site_url('admin/projects/' . $project->id . '/delete') ?>" onclick="return confirm('Tem certeza que deseja remover este projeto? Esta ação não pode ser desfeita.')"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -171,7 +174,6 @@
                 <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled><i class="bi bi-trash"></i> Remover Selecionadas</button>
                 <button type="button" class="btn btn-secondary" id="cancelSelectBtn">Cancelar</button>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 
@@ -180,7 +182,6 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'board' ? 'active' : '' ?>" id="board-tab" data-bs-toggle="tab" data-bs-target="#board-tab-pane" type="button" role="tab" aria-controls="board-tab-pane" aria-selected="<?= $active_tab === 'board' ? 'true' : 'false' ?>">Quadro</button>
         </li>
-        <?php if (session()->get('is_admin')): ?>
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'members' ? 'active' : '' ?>" id="members-tab" data-bs-toggle="tab" data-bs-target="#members-tab-pane" type="button" role="tab" aria-controls="members-tab-pane" aria-selected="<?= $active_tab === 'members' ? 'true' : 'false' ?>">Membros</button>
         </li>
@@ -196,7 +197,6 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link <?= $active_tab === 'timeline' ? 'active' : '' ?>" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-tab-pane" type="button" role="tab" aria-controls="timeline-tab-pane" aria-selected="<?= $active_tab === 'timeline' ? 'true' : 'false' ?>">Cronograma</button>
         </li>
-        <?php endif; ?>
     </ul>
 
     <!-- Conteúdo das Abas -->
@@ -546,7 +546,6 @@
             <?php endif; ?>
         </div>
         <!-- Aba Membros -->
-        <?php if (session()->get('is_admin')): ?>
         <div class="tab-pane fade content-constrained <?= $active_tab === 'members' ? 'show active' : '' ?>" id="members-tab-pane" role="tabpanel" aria-labelledby="members-tab" tabindex="0">
             <div class="row">
                 <!-- Coluna de Membros Atuais -->
@@ -605,7 +604,6 @@
                 </div>
             </div>
         </div>
-        <?php endif; ?>
     </div>
 </main>
 
