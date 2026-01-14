@@ -71,9 +71,12 @@ abstract class BaseController extends Controller
      */
     protected function loadGlobalData()
     {
-        if (session()->get('isLoggedIn') && session()->get('is_admin')) {
+        if (session()->get('isLoggedIn')) {
             $projectModel = new \App\Models\ProjectModel();
-            $this->viewData['global_projects'] = $projectModel->orderBy('name', 'ASC')->findAll();
+            
+            if (session()->get('is_admin')) {
+                $this->viewData['global_projects'] = $projectModel->orderBy('name', 'ASC')->findAll();
+            }
 
             $this->viewData['global_task_statuses'] = [
                 'não iniciadas', 'em desenvovimento', 'aprovação', 'com cliente',

@@ -31,15 +31,15 @@ class ProjectsController extends BaseController
         $search = $this->request->getGet('search');
         $status = $this->request->getGet('status') ?? 'active';
 
-        // Base query com join para incluir dados do cliente
-        $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
-                     ->join('clients', 'clients.id = projects.client_id', 'left');
-
-        // Aplica o filtro de status
-        $projectModel->where('projects.status', $status);
-
         // Se for admin, busca todos os projetos. Senão, busca apenas os projetos do usuário.
         if (session()->get('is_admin')) {
+            // Base query com join para incluir dados do cliente
+            $projectModel->select('projects.*, clients.name as client_name, clients.tag as client_tag, clients.color as client_color, projects.status')
+                         ->join('clients', 'clients.id = projects.client_id', 'left');
+
+            // Aplica o filtro de status
+            $projectModel->where('projects.status', $status);
+
             if ($search) {
                 $projectModel->groupStart()
                              ->like('projects.name', $search)
@@ -97,7 +97,23 @@ class ProjectsController extends BaseController
         }
 
         // Busca a contagem de projetos para as abas
-        $projectCounts = $projectModel->getProjectCountsByStatus();
+        if (session()->get('is_admin')) {
+            $projectCounts = $projectModel->getProjectCountsByStatus();
+        } else {
+            $userId = session()->get('user_id');
+            $stats = $projectModel->builder()
+                ->select('projects.status, COUNT(projects.id) as total')
+                ->join('project_users', 'project_users.project_id = projects.id')
+                ->where('project_users.user_id', $userId)
+                ->groupBy('projects.status')
+                ->get()
+                ->getResult();
+
+            $projectCounts = ['active' => 0, 'concluded' => 0];
+            foreach ($stats as $row) {
+                $projectCounts[$row->status] = $row->total;
+            }
+        }
 
         $data = [
             'title'            => 'Gerenciar Projetos',

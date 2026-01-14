@@ -4,6 +4,14 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.7' => [
+        'date' => '2025-11-24',
+        'items' => [
+            '<strong>Permissões:</strong> Ajuste no carregamento de dados globais para permitir que usuários restritos visualizem a sidebar corretamente.',
+            '<strong>Projetos:</strong> Correção na listagem de projetos para evitar erro de duplicidade (join) ao filtrar por usuário.',
+            '<strong>Interface:</strong> A contagem de projetos nas abas (ativos/concluídos) agora reflete apenas os projetos que o usuário tem permissão de acessar.',
+        ]
+    ],
     '1.1.6' => [
         'date' => '2025-11-23',
         'items' => [
