@@ -85,11 +85,13 @@
     <div class="content-constrained">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div style="width: 45%;">
+                <?php if (!empty($project->client_tag)): ?>
+                    <div class="mb-1">
+                        <span class="badge fs-6" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
+                    </div>
+                <?php endif; ?>
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <h1 class="mb-0"><?= esc($project->name) ?></h1>
-                    <?php if (!empty($project->client_tag)): ?>
-                        <span class="badge fs-6" style="background-color: <?= esc($project->client_color ?? '#6c757d') ?>;"><?= esc($project->client_tag) ?></span>
-                    <?php endif; ?>
                     <?php if (isset($project->status) && $project->status === 'concluded'): ?>
                         <span class="badge bg-success fs-6">Concluído</span>
                     <?php endif; ?>
