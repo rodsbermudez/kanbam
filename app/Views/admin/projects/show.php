@@ -84,7 +84,7 @@
     <!-- Cabeçalho e Ações -->
     <div class="content-constrained">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
+            <div style="width: 45%;">
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <h1 class="mb-0"><?= esc($project->name) ?></h1>
                     <?php if (!empty($project->client_tag)): ?>
@@ -96,7 +96,7 @@
                 </div>
                 <p class="text-muted mb-0"><?= esc($project->description) ?></p>
             </div>
-            <div id="main-actions" class="d-flex align-items-center gap-3 flex-wrap">
+            <div id="main-actions" class="d-flex align-items-center justify-content-end gap-3" style="width: 55%;">
                 <!-- Ações do Quadro -->
                 <div id="board-actions-group" class="btn-group" role="group" aria-label="Ações do Quadro">
                     <button type="button" class="btn btn-secondary" id="multiSelectBtn"><i class="bi bi-check2-square"></i> Selecionar Múltiplos</button>
