@@ -252,6 +252,23 @@
                                                         <ul class="dropdown-menu dropdown-menu-end bg-light">
                                                             <li><a class="dropdown-item edit-task-btn text-dark" href="#" data-task-id="<?= $task->id ?>"><i class="bi bi-pencil me-2"></i>Editar</a></li>
                                                             <li><a class="dropdown-item add-note-btn text-dark" href="#" data-task-id="<?= $task->id ?>"><i class="bi bi-journal-plus me-2"></i>Criar Nota</a></li>
+                                                            <li class="dropdown-submenu">
+                                                                <a class="dropdown-item text-dark" href="#" data-bs-toggle="dropdown"><i class="bi bi-arrow-right-circle me-2"></i>Mover para...</a>
+                                                                <ul class="dropdown-menu dropdown-submenu">
+                                                                    <?php foreach ($statuses as $status): ?>
+                                                                        <?php $isCurrentStatus = ($status === $task->status); ?>
+                                                                        <li>
+                                                                            <a class="dropdown-item <?= $isCurrentStatus ? 'disabled' : 'text-dark move-to-column' ?>" 
+                                                                               href="#" 
+                                                                               data-task-id="<?= $task->id ?>"
+                                                                               data-new-status="<?= esc($status) ?>"
+                                                                               <?= $isCurrentStatus ? 'aria-disabled="true"' : '' ?>>
+                                                                                <?= esc($status) ?><?= $isCurrentStatus ? ' (atual)' : '' ?>
+                                                                            </a>
+                                                                        </li>
+                                                                    <?php endforeach; ?>
+                                                                </ul>
+                                                            </li>
                                                             <li><a class="dropdown-item delete-task-btn text-dark" href="#" data-task-id="<?= $task->id ?>" data-task-title="<?= esc($task->title) ?>"><i class="bi bi-trash me-2"></i>Remover</a></li>
                                                         </ul>
                                                     </div>
@@ -984,6 +1001,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const deleteBtn = e.target.closest('.delete-task-btn');
             const addNoteBtn = e.target.closest('.add-note-btn');
             const deleteNoteBtn = e.target.closest('.delete-note-btn');
+            const moveToBtn = e.target.closest('.move-to-column');
+
+            if (moveToBtn && !moveToBtn.classList.contains('disabled')) {
+                e.preventDefault();
+                const taskId = moveToBtn.dataset.taskId;
+                const newStatus = moveToBtn.dataset.newStatus;
+                moveTaskToColumn(taskId, newStatus);
+            }
 
             if (editBtn) {
                 e.preventDefault();
@@ -1269,6 +1294,65 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         sortableInstances.push(sortable); // Guarda a instância para poder desabilitá-la
     });
+
+    // --- Função para mover card para outra coluna ---
+    function moveTaskToColumn(taskId, newStatus) {
+        const currentCard = document.querySelector(`.kanban-card[data-task-id="${taskId}"]`);
+        const sourceColumn = currentCard ? currentCard.closest('.kanban-cards') : null;
+        const targetColumn = document.querySelector(`.kanban-cards[data-status="${newStatus}"]`);
+
+        if (!currentCard || !sourceColumn || !targetColumn) {
+            showToast('Erro ao mover tarefa. Tente recarregar a página.', 'danger');
+            return;
+        }
+
+        // Remove card da coluna atual
+        currentCard.remove();
+
+        // Insere no início da coluna destino
+        targetColumn.insertBefore(currentCard, targetColumn.firstChild);
+
+        // Monta array de order com novo card em primeiro
+        const order = [taskId, ...Array.from(targetColumn.children)
+            .filter(c => c.dataset.taskId != taskId)
+            .map(c => c.dataset.taskId)];
+
+        // Envia para backend
+        fetch(`<?= site_url('admin/tasks/update-board') ?>`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                taskId: taskId,
+                newStatus: newStatus,
+                order: order
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                showToast('Erro de comunicação. A página será recarregada...', 'danger');
+                setTimeout(() => location.reload(), 3000);
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('Tarefa movida com sucesso.', 'success');
+            } else {
+                showToast(data.message || 'Erro ao mover tarefa.', 'danger');
+                setTimeout(() => location.reload(), 3000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao mover card:', error);
+            showToast('Erro ao mover tarefa. A página será recarregada...', 'danger');
+            setTimeout(() => location.reload(), 3000);
+        });
+    }
 
     // --- Lógica para a Aba de Documentos ---
     const projectId = <?= $project->id ?>;

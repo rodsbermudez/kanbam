@@ -216,7 +216,40 @@
         }
         .kanban-card .btn-icon { padding: 0.1rem 0.4rem; line-height: 1; color: inherit; background: transparent; border: none; }
         .kanban-card .dropdown-menu { z-index: 1050; }
+        
+        .kanban-card .dropdown-submenu { position: relative; }
+        .kanban-card .dropdown-submenu > .dropdown-item::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-color: transparent transparent transparent #333;
+            border-style: solid;
+            border-width: 5px 0 5px 5px;
+        }
+        .kanban-card .dropdown-submenu > .dropdown-menu {
+            position: absolute;
+            top: -6px;
+            left: 100%;
+            margin-left: -1px;
+            border-radius: 0.25rem;
+            display: none;
+        }
+        .kanban-card .dropdown-submenu:hover > .dropdown-menu { display: block; }
         .kanban-card-footer .user-icon-circle { border: 1px solid #fff; box-sizing: border-box; }
+        
+        /* Task list items (dashboard/sidebar) */
+        .task-list-item { position: relative; }
+        .task-list-item .task-list-link { text-decoration: none; color: inherit; display: block; }
+        .task-list-item .task-list-link:hover { background-color: rgba(0,0,0,0.02); }
+        .task-list-item .dropdown { position: absolute; right: 0.5rem; top: 0.5rem; }
+        .task-list-item .dropdown-menu { position: absolute; right: 0; left: auto; z-index: 1050; bottom: 100%; margin-bottom: 2px; }
+        .task-list-item .dropdown .btn-icon { padding: 0.1rem 0.4rem; line-height: 1; color: #6c757d; background: transparent; border: none; }
+        .task-list-item .dropdown .btn-icon:hover { color: #333; }
+        .task-list-item .dropdown-menu .dropdown-item { color: #212529; font-weight: 500; }
+        .task-list-item .dropdown-menu .dropdown-item:hover { background-color: #e9ecef; }
+        .task-list-item .dropdown-menu .dropdown-item.disabled { color: #6c757d; cursor: not-allowed; }
         
         /* Notas no card */
         .kanban-card-notes { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.2); }

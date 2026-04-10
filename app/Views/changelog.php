@@ -4,6 +4,14 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.8' => [
+        'date' => '2026-04-10',
+        'items' => [
+            '<strong>Kanban:</strong> Adicionada opção "Mover para..." no menu de 3 pontos dos cards, permitindo mover tarefas entre colunas sem precisar arrastar.',
+            '<strong>Dashboard:</strong> Adicionado dropdown de status nas listas de tarefas, permitindo alterar o status diretamente sem acessar o projeto.',
+            '<strong>Sidebar:</strong> Adicionado dropdown de status nas listas de tarefas da sidebar, permitindo alterar o status diretamente.',
+        ]
+    ],
     '1.1.7' => [
         'date' => '2025-11-24',
         'items' => [

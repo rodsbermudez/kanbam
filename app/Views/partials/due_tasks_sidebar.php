@@ -8,6 +8,56 @@
         font-size: 0.85rem; /* Reduz um pouco o tamanho da fonte para ajudar no ajuste */
     }
 </style>
+
+<?php
+// Lista de status disponíveis (deve ser igual ao Kanban)
+$sidebar_task_statuses = [
+    'não iniciadas', 'em desenvovimento', 'aprovação', 'com cliente',
+    'ajustes', 'aprovada', 'implementada', 'concluída', 'cancelada',
+];
+
+// Função para renderizar item de tarefa com dropdown de status
+if (!function_exists('renderSidebarTaskItem')) {
+    function renderSidebarTaskItem($task, $status_class, $statuses) {
+        ob_start();
+        ?>
+        <div class="list-group-item list-group-item-action task-list-item">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <small><?= date('d/m/Y', strtotime($task->due_date)) ?></small>
+                <span class="badge <?= $status_class ?>"><?= esc(ucfirst($task->status)) ?></span>
+                <?php if (!empty($task->client_tag)): ?>
+                    <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
+                <?php endif; ?>
+            </div>
+            <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="task-list-link">
+                <h6 class="mb-1"><?= esc($task->title) ?></h6>
+                <p class="mb-0 text-muted small">Projeto: <?= esc($task->project_name) ?></p>
+            </a>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end bg-light" data-bs-popper="static">
+                    <?php foreach ($statuses as $status): ?>
+                        <?php $isCurrent = ($status === $task->status); ?>
+                        <li>
+                            <a class="dropdown-item text-dark fw-semibold <?= $isCurrent ? 'disabled' : 'change-status' ?>"
+                               href="#"
+                               data-task-id="<?= $task->id ?>"
+                               data-new-status="<?= esc($status) ?>"
+                               <?= $isCurrent ? 'aria-disabled="true"' : '' ?>>
+                                <?= esc($status) ?><?= $isCurrent ? ' (atual)' : '' ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+}
+?>
 <div class="sidebar-overlay d-none" id="sidebar-overlay"></div>
 <div class="sidebar" id="due-tasks-sidebar">
     <div class="sidebar-header d-flex justify-content-between align-items-center">
@@ -57,21 +107,7 @@
                     <div class="list-group list-group-flush">
                         <?php foreach ($sidebar_overdue_other as $task): ?>
                             <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
-                            <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1"><?= esc($task->title) ?></h6>
-                                    <small>Venceu em: <?= date('d/m/Y', strtotime($task->due_date)) ?></small>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <p class="mb-0 text-muted small">Projeto: <?= esc($task->project_name) ?></p>
-                                    <div>
-                                        <span class="badge <?= $status_class ?> me-1"><?= esc(ucfirst($task->status)) ?></span>
-                                        <?php if (!empty($task->client_tag)): ?>
-                                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </a>
+                            <?= renderSidebarTaskItem($task, $status_class, $sidebar_task_statuses) ?>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
@@ -84,21 +120,7 @@
                     <div class="list-group list-group-flush">
                         <?php foreach ($sidebar_upcoming as $task): ?>
                             <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
-                            <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1"><?= esc($task->title) ?></h6>
-                                    <small><?= date('d/m/Y', strtotime($task->due_date)) ?></small>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <p class="mb-0 text-muted small">Projeto: <?= esc($task->project_name) ?></p>
-                                    <div>
-                                        <span class="badge <?= $status_class ?> me-1"><?= esc(ucfirst($task->status)) ?></span>
-                                        <?php if (!empty($task->client_tag)): ?>
-                                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </a>
+                            <?= renderSidebarTaskItem($task, $status_class, $sidebar_task_statuses) ?>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
@@ -111,21 +133,7 @@
                     <div class="list-group list-group-flush">
                         <?php foreach ($sidebar_overdue_client as $task): ?>
                             <?php $status_class = $status_colors[$task->status] ?? $status_colors['default']; ?>
-                            <a href="<?= site_url('admin/projects/' . $task->project_id) ?>" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1"><?= esc($task->title) ?></h6>
-                                    <small><?= date('d/m/Y', strtotime($task->due_date)) ?></small>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <p class="mb-0 text-muted small">Projeto: <?= esc($task->project_name) ?></p>
-                                    <div>
-                                        <span class="badge <?= $status_class ?> me-1"><?= esc(ucfirst($task->status)) ?></span>
-                                        <?php if (!empty($task->client_tag)): ?>
-                                            <span class="badge" style="background-color: <?= esc($task->client_color ?? '#6c757d') ?>;"><?= esc($task->client_tag) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </a>
+                            <?= renderSidebarTaskItem($task, $status_class, $sidebar_task_statuses) ?>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
@@ -133,3 +141,68 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('#due-tasks-sidebar .change-status').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const taskId = this.dataset.taskId;
+            const newStatus = this.dataset.newStatus;
+            
+            fetch('<?= site_url('admin/tasks/update-board') ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                },
+                body: JSON.stringify({
+                    taskId: taskId,
+                    newStatus: newStatus,
+                    order: [taskId]
+                })
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Status atualizado.', 'success');
+                    setTimeout(function() { location.reload(); }, 1000);
+                } else {
+                    showToast(data.message || 'Erro ao atualizar status.', 'danger');
+                }
+            })
+            .catch(function(error) {
+                console.error('Erro:', error);
+                showToast('Erro ao atualizar status.', 'danger');
+            });
+        });
+    });
+
+    document.querySelectorAll('#due-tasks-sidebar .task-list-item .dropdown').forEach(function(dropdown) {
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const btn = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+        
+        if (menu && btn) {
+            let hideTimeout;
+            
+            dropdown.addEventListener('mouseenter', function() {
+                clearTimeout(hideTimeout);
+                const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(btn);
+                bsDropdown.show();
+            });
+            
+            dropdown.addEventListener('mouseleave', function() {
+                hideTimeout = setTimeout(function() {
+                    const bsDropdown = bootstrap.Dropdown.getInstance(btn);
+                    if (bsDropdown) {
+                        bsDropdown.hide();
+                    }
+                }, 150);
+            });
+        }
+    });
+});
+</script>
