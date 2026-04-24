@@ -4,6 +4,15 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.1.9' => [
+        'date' => '2026-04-24',
+        'items' => [
+            '<strong>Relatórios:</strong> Novo sistema de relatórios de manutenção.',
+            '<strong>Importação:</strong> Permite importar relatórios XML da pasta writable/reports/.',
+            '<strong>Visualização:</strong> Conversor XML para HTML com formatação completa.',
+            '<strong>Admin:</strong> Menu Relatórios na barra de navegação.',
+        ]
+    ],
     '1.1.8' => [
         'date' => '2026-04-10',
         'items' => [

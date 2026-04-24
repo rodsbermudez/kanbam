@@ -25,6 +25,9 @@
                     <a class="nav-link" href="<?= site_url('admin/project-type') ?>">Tipos de Projeto</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('admin/maintenance') ?>">Relatórios</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('changelog') ?>">Atualizações</a>
                 </li>
                 <?php endif; ?>

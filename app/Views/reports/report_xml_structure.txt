@@ -1,0 +1,241 @@
+PADRÃO XML PARA RELATÓRIOS
+========================
+
+Este documento define o padrão XML para geração de relatórios de manutenção.
+A IA que gera o relatório deve seguir estas instruções para formatar o XML.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+    <!-- Cabeçalho -->
+    <header>
+        <title>TÍTULO DO RELATÓRIO</title>
+        <client>NOME DO CLIENTE</client>
+        <date>DD/MM/YYYY</date>
+        <author>NOME DO RESPONSÁVEL</author>
+    </header>
+
+    <!-- Seções do Relatório -->
+    <sections>
+        
+        <!-- TIPO 1: info_simple - Informações em formato chave: valor -->
+        <section type="info_simple">
+            <title>TÍTULO DA SEÇÃO</title>
+            <items>
+                <item key="CHAVE" value="VALOR"/>
+                <item key="IP" value="31.97.24.99"/>
+                <item key="Status" value="OK" status="success"/>
+                <item key="memory" value="1GB" status="warning"/>
+                <item key="Erro" value="Falha" status="danger"/>
+            </items>
+        </section>
+
+        <!-- TIPO 2: table - Tabela com colunas -->
+        <section type="table">
+            <title>TÍTULO DA SEÇÃO</title>
+            <columns>
+                <column name="Coluna 1" width="30%"/>
+                <column name="Coluna 2" width="20%"/>
+                <column name="Coluna 3" width="30%"/>
+            </columns>
+            <rows>
+                <row>
+                    <cell>Dados da célula 1</cell>
+                    <cell>Dados da célula 2</cell>
+                    <cell status="success">Status OK</cell>
+                </row>
+                <row>
+                    <cell>Linha 2</cell>
+                    <cell>Valor</cell>
+                    <cell status="warning">Atenção</cell>
+                </row>
+            </rows>
+        </section>
+
+        <!-- TIPO 3: table_versions - Tabela De -> Para (versões) -->
+        <section type="table_versions">
+            <title>ATUALIZAÇÕES APLICADAS</title>
+            <description>Texto descritivo opcional.</description>
+            <columns>
+                <column name="Item" width="40%"/>
+                <column name="De" width="20%"/>
+                <column name="Para" width="20%"/>
+            </columns>
+            <rows>
+                <row>
+                    <cell>Plugin/Tema</cell>
+                    <cell>versão anterior</cell>
+                    <cell>nova versão</cell>
+                </row>
+            </rows>
+            <summary>
+                <total>Total: X itens</total>
+                <pending>Pendentes: Y</pending>
+            </summary>
+        </section>
+
+        <!-- TIPO 4: list_items - Lista simples -->
+        <section type="list_items">
+            <title>TÍTULO DA SEÇÃO</title>
+            <items>
+                <item>Primeiro item da lista</item>
+                <item>Segundo item da lista</item>
+            </items>
+        </section>
+
+        <!-- TIPO 5: alert - Alerta de problema -->
+        <section type="alert">
+            <level>critical</level>
+            <title>TÍTULO DO ALERTA</title>
+            <message>Descrição do problema encontrado.</message>
+            <impact>
+                <item>Impacto 1 detallado</item>
+                <item>Impacto 2 detalhado</item>
+            </impact>
+            <action_required>Ação que precisa ser tomada</action_required>
+        </section>
+
+        <!-- TIPO 6: table_status - Tabela com status coloridos -->
+        <section type="table_status">
+            <title>TÍTULO DA SEÇÃO</title>
+            <columns>
+                <column name="Status" width="15%"/>
+                <column name="Tipo 1" width="20%"/>
+                <column name="Tipo 2" width="20%"/>
+                <column name="Total" width="15%"/>
+            </columns>
+            <rows>
+                <row>
+                    <cell>publish</cell>
+                    <cell>10</cell>
+                    <cell>5</cell>
+                    <cell>15</cell>
+                </row>
+                <row>
+                    <cell>pending</cell>
+                    <cell>2</cell>
+                    <cell>1</cell>
+                    <cell>3</cell>
+                </row>
+            </rows>
+        </section>
+
+        <!-- TIPO 7: pendencies - Lista de pendências -->
+        <section type="pendencies">
+            <title>PENDÊNCIAS</title>
+            <items>
+                <item priority="high">Pendencia urgente</item>
+                <item priority="medium">Pendencia média</item>
+                <item priority="low">Pendenciabaixa</item>
+            </items>
+        </section>
+
+        <!-- TIPO 8: text_block - Texto livre -->
+        <section type="text_block">
+            <title>TÍTULO DA SEÇÃO</title>
+            <content>
+                Texto livre com parágrafos detalhados.
+                Pode conter múltiplas linhas de explicação.
+            </content>
+        </section>
+
+    </sections>
+
+    <!-- Rodapé -->
+    <footer>
+        <note>Nota adicional opcional</note>
+    </footer>
+
+</report>
+
+=============================================================================
+INSTRUÇÕES PARA IA GERAR O XML
+=============================================================================
+
+1. CABEÇALHO (obrigatório)
+   - title: Título descritivo do relatório
+   - client: Nome do cliente ou domínio
+   - date: Data no formato DD/MM/YYYY
+   - author: Nome do responsável pela manutenção
+
+2. SEÇÕES
+   Cada seção deve ter um "type" que melhor representa o conteúdo:
+
+   a) info_simple - Use quando:
+      - Lista de pares chave: valor
+      - Dados técnicos simples (IP, usuário, senhas)
+      - Status individuais
+      Atributos: key, value, status (success/warning/danger/default)
+
+   b) table - Use quando:
+      - dados em formato de tabela
+      - Comparações entre versões ou componentes
+      Atributos: cell (opcional: status)
+
+   c) table_versions - Use especificamente para:
+      - Atualizações De → Para (plugins, temas, WordPress)
+      - Migrações de versão
+      Inclui campos opcionais: description e summary
+
+   d) list_items - Use quando:
+      - Lista simples de itens
+      - Backups realizados
+      - Correções aplicadas
+
+   e) alert - Use quando:
+      - Problemas encontrados
+      - Alertas importantes
+      - Situações que requerem atenção
+      Atributos: level (info/warning/critical), message, impact (lista), action_required
+
+   f) table_status - Use quando:
+      - Tabelas com status coloridos (publish, draft, pending)
+      - Estatísticas por tipo
+      - Comparações numéricas
+
+   g) pendencies - Use quando:
+      - Lista de pendências ou tarefas
+      - Itens que precisam de ação
+      Atributos: priority (high/medium/low)
+
+   h) text_block - Use quando:
+      - Texto longo explicativo
+      - Análises detalhadas
+      - Justificativas
+
+3. ATRIBUTOS DE STATUS
+   Use para indicar estado:
+   - success (verde) - OK, atualizado, funcionando
+   - warning (amarelo) - Atenção, pendente, monitorar
+   - danger (vermelho) - Erro, crítico, ação necessária
+   - default (cinza) - Neutro, informativo
+
+4. ATRIBUTOS DE PRIORIDADE (para pendencies)
+   - high - Urgente, precisa de ação imediata
+   - medium - Precisa de atenção
+   - low - Pode ser feito depois
+
+5. ATRIBUTOS DE NÍVEL (para alerts)
+   - info - Informativo
+   - warning - Atenção necessária
+   - critical - Crítico, ação imediata
+
+6. ORDEM DAS SEÇÕES
+   Organize logicamente:
+   1. Informações gerais (servidor, WordPress)
+   2. Atualizações realizadas
+   3. Análises e alertas
+   4. Limpezas realizadas
+   5. Problemas encontrados
+   6. Pendências
+
+=============================================================================
+REGRAS GERAIS
+=============================================================================
+
+- Todas as tags devem ser fechamento
+- Use CDATA para texto com caracteres especiais
+- Mantenha o XML válido
+- Não inclua tags fora do padrão definido
+- Para campos vazios, omita a tag ou use attribute com valor vazio
+- Datas no formato DD/MM/YYYY
+- Números sem formatação de.milhar

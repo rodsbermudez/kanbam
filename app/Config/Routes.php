@@ -101,6 +101,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('clients/access/(:num)/regenerate-password', 'Admin\ClientsController::regeneratePassword/$1');
         $routes->post('clients/access/(:num)/delete', 'Admin\ClientsController::deleteAccess/$1');
 
+        // Relatórios de Manutenção
+        $routes->get('maintenance', 'Admin\MaintenanceController::index');
+        $routes->get('maintenance/create', 'Admin\MaintenanceController::create');
+        $routes->match(['get', 'post'], 'maintenance/store', 'Admin\MaintenanceController::store');
+        $routes->get('maintenance/(:num)/view', 'Admin\MaintenanceController::view/$1');
+        $routes->post('maintenance/(:num)/delete', 'Admin\MaintenanceController::delete/$1');
+
         // Gerenciamento de Projetos (criar, editar, deletar, gerenciar membros)
         // Rotas específicas de projeto (devem vir antes do 'resource' para ter prioridade)
         $routes->get('projects/(:num)/create-slack-channel', 'Admin\ProjectsController::createSlackChannel/$1');
