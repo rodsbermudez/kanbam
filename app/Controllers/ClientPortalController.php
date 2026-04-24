@@ -7,6 +7,8 @@ use App\Models\ProjectModel;
 use App\Models\TaskModel;
 use App\Models\ProjectFileModel;
 use App\Models\ClientModel;
+use App\Models\ReportModel;
+use App\Libraries\XmlToHtml;
 
 class ClientPortalController extends BaseController
 {
@@ -67,6 +69,12 @@ class ClientPortalController extends BaseController
 
         $clientId = session()->get('client_portal_client_id');
 
+        // Buscar relatórios do cliente
+        $reportModel = new ReportModel();
+        $client_reports = $reportModel->where('client_id', $clientId)
+                                       ->orderBy('created_at', 'DESC')
+                                       ->findAll();
+        
         $projectModel = new ProjectModel();
         $projects = $projectModel->where('client_id', $clientId)
                                   ->where('is_visible_to_client', 1) // Apenas projetos visíveis
@@ -80,6 +88,10 @@ class ClientPortalController extends BaseController
                 'selected_project' => null,
                 'weekly_schedule' => [],
                 'visible_files' => [],
+                'client_reports' => $client_reports,
+                'has_files' => false,
+                'selected_report' => null,
+                'report_html' => null,
             ]);
         }
 
@@ -141,6 +153,10 @@ class ClientPortalController extends BaseController
             'weekly_schedule'  => $weekly_schedule,
             'current_week_key' => $current_week_key,
             'visible_files'    => $visible_files,
+            'client_reports'   => $client_reports,
+            'has_files'        => !empty($visible_files),
+            'selected_report' => null,
+            'report_html'     => null,
         ];
 
         // Se for um dispositivo móvel, carrega a view otimizada
@@ -195,5 +211,84 @@ class ClientPortalController extends BaseController
         }
 
         return $this->response->download($path, null)->setFileName($file->file_name);
+    }
+
+    /**
+     * Visualiza um relatório no portal do cliente
+     */
+    public function viewReport($reportId)
+    {
+        $clientId = session()->get('client_portal_client_id');
+        
+        $reportModel = new ReportModel();
+        $report = $reportModel->find($reportId);
+        
+        // Validação: relatório existe e pertence ao cliente
+        if (!$report || $report->client_id != $clientId) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Relatório não encontrado ou não acessível.');
+        }
+        
+        // Buscar projetos do cliente para a sidebar
+        $projectModel = new ProjectModel();
+        $projects = $projectModel->where('client_id', $clientId)
+                                  ->where('is_visible_to_client', 1)
+                                  ->orderBy('name', 'ASC')
+                                  ->findAll();
+        
+        // Buscar todos os relatórios do cliente
+        $client_reports = $reportModel->where('client_id', $clientId)
+                                       ->orderBy('created_at', 'DESC')
+                                       ->findAll();
+        
+        // Converter XML para HTML
+        $htmlContent = XmlToHtml::convert($report->xml_content);
+        
+        $data = [
+            'title'           => 'Relatório: ' . esc($report->title),
+            'projects'         => $projects,
+            'selected_project' => null,
+            'weekly_schedule' => [],
+            'current_week_key' => null,
+            'visible_files'   => [],
+            'client_reports'  => $client_reports,
+            'selected_report' => $report,
+            'report_html'     => $htmlContent,
+        ];
+        
+        return view('client_portal/dashboard', $data);
+    }
+
+    /**
+     * Lista todos os relatórios do cliente
+     */
+    public function listReports()
+    {
+        $clientId = session()->get('client_portal_client_id');
+        
+        $reportModel = new ReportModel();
+        $client_reports = $reportModel->where('client_id', $clientId)
+                                     ->orderBy('created_at', 'DESC')
+                                     ->findAll();
+        
+        $projectModel = new ProjectModel();
+        $projects = $projectModel->where('client_id', $clientId)
+                                  ->where('is_visible_to_client', 1)
+                                  ->orderBy('name', 'ASC')
+                                  ->findAll();
+        
+        $data = [
+            'title'           => 'Manutenções',
+            'projects'        => $projects,
+            'selected_project' => null,
+            'weekly_schedule' => [],
+            'current_week_key' => null,
+            'visible_files'  => [],
+            'client_reports'  => $client_reports,
+            'selected_report' => null,
+            'report_html'     => null,
+            'has_files'       => false,
+        ];
+        
+        return view('client_portal/dashboard', $data);
     }
 }

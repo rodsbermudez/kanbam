@@ -4,6 +4,14 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.2.0' => [
+        'date' => '2026-04-24',
+        'items' => [
+            '<strong>Portal do Cliente:</strong> Adicionada seção "Manutenções" para clientes visualizarem seus relatórios.',
+            '<strong>Portal do Cliente:</strong> Lista de relatórios na barra lateral (similar a Arquivos Disponíveis).',
+            '<strong>Portal do Cliente:</strong> Visualização de relatórios em HTML formatado.',
+        ]
+    ],
     '1.1.9' => [
         'date' => '2026-04-24',
         'items' => [

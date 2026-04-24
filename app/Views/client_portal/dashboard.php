@@ -3,12 +3,16 @@
 <?php
     // Determina se a barra lateral de arquivos deve ser exibida
     $has_files = !empty($visible_files);
+    // Determina se deve mostrar a barra lateral de relatórios (quando não há projeto selecionado)
+    $show_reports_sidebar = empty($selected_project) && !empty($client_reports) && !$has_files;
+    // Determina se alguma barra lateral do meio deve aparecer
+    $has_sidebar = $has_files || $show_reports_sidebar;
 ?>
 
 <style>
     body {
         display: grid;
-        grid-template-columns: <?= $has_files ? '280px 280px 1fr' : '280px 1fr' ?>;
+        grid-template-columns: <?= $has_sidebar ? '280px 280px 1fr' : '280px 1fr' ?>;
         grid-template-rows: 100vh; /* Linha única com altura total */
         height: 100vh;
         overflow: hidden;
@@ -66,6 +70,48 @@
     .current-week-highlight .card-header { background-color: var(--bs-primary-bg-subtle); font-weight: bold; }
     .week-card .task-info { flex-grow: 1; }
     .week-card .task-meta { display: flex; align-items: center; gap: 1rem; min-width: 120px; justify-content: flex-end; }
+    
+    /* Estilos para relatórios no portal */
+    .report-html {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+    .report-html .report-header {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .report-html .report-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .report-html .report-section {
+        margin-bottom: 2rem;
+    }
+    .report-html .report-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .report-html .report-description {
+        color: #6c757d;
+        font-style: italic;
+        margin-bottom: 1rem;
+    }
+    .report-html .report-list {
+        list-style: disc;
+        padding-left: 1.5rem;
+    }
+    .report-html .report-pendencies li {
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0.25rem;
+    }
 </style>
 
 <aside class="client-sidebar">
@@ -88,6 +134,16 @@
             </div>
         <?php endif; ?>
     </div>
+    
+    <?php if (!empty($client_reports)): ?>
+    <div class="sidebar-content mt-3">
+        <h5 class="text-light mb-3">
+            <a href="<?= site_url('portal/reports/list') ?>" class="text-decoration-none text-light">
+                <i class="bi bi-file-earmark-text me-2"></i>Manutenções
+            </a>
+        </h5>
+    </div>
+    <?php endif; ?>
 
     <div class="sidebar-footer">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -127,10 +183,44 @@
         <?php endforeach; ?>
     </div>
 </aside>
+<?php elseif ($show_reports_sidebar): ?>
+<aside class="client-files-sidebar">
+    <h5 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i>Manutenções</h5>
+    <div class="list-group list-group-flush">
+        <?php foreach ($client_reports as $report): ?>
+            <a href="<?= site_url('portal/reports/' . $report->id) ?>" 
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0"
+               style="background: transparent; border-color: rgba(0,0,0,0.05);">
+                <div>
+                    <strong class="d-block"><?= esc($report->title) ?></strong>
+                    <small class="text-muted"><?= date('d/m/Y', strtotime($report->created_at)) ?></small>
+                </div>
+                <div class="text-end fs-5">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</aside>
 <?php endif; ?>
 
 <main class="client-main">
-    <?php if (!$selected_project): ?>
+    <?php if (!empty($selected_report)): ?>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <a href="<?= site_url('portal/reports/list') ?>" class="btn btn-sm btn-secondary mb-2">
+                    <i class="bi bi-arrow-left"></i> Voltar para lista
+                </a>
+                <h2><?= esc($selected_report->title) ?></h2>
+                <p class="text-muted"><?= date('d/m/Y H:i', strtotime($selected_report->created_at)) ?></p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body report-html">
+                <?= $report_html ?>
+            </div>
+        </div>
+    <?php elseif (empty($selected_project)): ?>
         <div class="text-center mt-5">
             <h2 class="text-muted">Selecione um projeto na lista ao lado para ver o cronograma.</h2>
         </div>

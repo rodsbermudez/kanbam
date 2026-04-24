@@ -16,6 +16,8 @@ $routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) 
     $routes->get('dashboard', 'ClientPortalController::dashboard');
     $routes->get('dashboard/(:num)', 'ClientPortalController::dashboard/$1');
     $routes->get('files/(:num)/download', 'ClientPortalController::downloadFile/$1');
+    $routes->get('reports/(:num)', 'ClientPortalController::viewReport/$1');
+    $routes->get('reports/list', 'ClientPortalController::listReports');
 });
 
 // --- Rotas para Relatórios Externos (n8n, etc.) ---
