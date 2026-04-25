@@ -161,8 +161,9 @@ class ApiController extends BaseController
         }
 
         $taskModel = new TaskModel();
-        $builder = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id, users.name as user_name, users.initials as user_initials, users.color as user_color')
+        $builder = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id, users.name as user_name, users.initials as user_initials, users.color as user_color, clients.name as client_name, clients.tag as client_tag, clients.id as client_id')
                           ->join('projects', 'projects.id = tasks.project_id')
+                          ->join('clients', 'clients.id = projects.client_id', 'left')
                           ->join('users', 'users.id = tasks.user_id', 'left');
 
         $userId = $this->request->getGet('user_id');
@@ -193,8 +194,9 @@ class ApiController extends BaseController
         }
 
         $taskModel = new TaskModel();
-        $task = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id, users.name as user_name, users.initials as user_initials, users.color as user_color')
+        $task = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id, users.name as user_name, users.initials as user_initials, users.color as user_color, clients.name as client_name, clients.tag as client_tag, clients.id as client_id')
                          ->join('projects', 'projects.id = tasks.project_id')
+                         ->join('clients', 'clients.id = projects.client_id', 'left')
                          ->join('users', 'users.id = tasks.user_id', 'left')
                          ->find($id);
 
