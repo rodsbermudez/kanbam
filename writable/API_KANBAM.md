@@ -252,6 +252,9 @@ GET /api/tasks
       "description": "Criar proposal inicial",
       "status": "não iniciadas",
       "user_id": 2,
+      "user_name": "Maria Silva",
+      "user_initials": "MA",
+      "user_color": "#FF5733",
       "due_date": "2024-02-01",
       "created_at": "2024-01-15T10:30:00Z"
     }
@@ -283,6 +286,9 @@ GET /api/tasks/:id
     "description": "Criar proposal inicial",
     "status": "não iniciadas",
     "user_id": 2,
+    "user_name": "Maria Silva",
+    "user_initials": "MA",
+    "user_color": "#FF5733",
     "due_date": "2024-02-01",
     "created_at": "2024-01-15T10:30:00Z"
   },
