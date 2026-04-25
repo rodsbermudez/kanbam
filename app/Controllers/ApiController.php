@@ -161,10 +161,26 @@ class ApiController extends BaseController
         }
 
         $taskModel = new TaskModel();
-        $tasks = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id')
-                          ->join('projects', 'projects.id = tasks.project_id')
-                          ->orderBy('tasks.created_at', 'DESC')
-                          ->findAll();
+        $builder = $taskModel->select('tasks.*, projects.name as project_name, projects.id as project_id')
+                          ->join('projects', 'projects.id = tasks.project_id');
+
+        $userId = $this->request->getGet('user_id');
+        $status = $this->request->getGet('status');
+        $projectId = $this->request->getGet('project_id');
+
+        if ($userId) {
+            $builder->where('tasks.user_id', $userId);
+        }
+
+        if ($status) {
+            $builder->where('tasks.status', $status);
+        }
+
+        if ($projectId) {
+            $builder->where('tasks.project_id', $projectId);
+        }
+
+        $tasks = $builder->orderBy('tasks.created_at', 'DESC')->findAll();
 
         return $this->jsonResponse(['tasks' => $tasks]);
     }
