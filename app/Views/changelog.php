@@ -7,7 +7,8 @@ $changelog = [
     '1.2.6' => [
         'date' => '2026-04-25',
         'items' => [
-            '<strong>API:</strong> Tarefas agora incluem dados do usuário responsável.',
+            '<strong>API:</strong> Tarefas incluem dados do usuário responsável.',
+            '<strong>API:</strong> Tarefas incluem dados do cliente do projeto.',
         ]
     ],
     '1.2.5' => [
