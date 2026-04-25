@@ -4,6 +4,12 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.2.7' => [
+        'date' => '2026-04-25',
+        'items' => [
+            '<strong>Portal:</strong> Senhas SSH removidas dos relatórios.',
+        ]
+    ],
     '1.2.6' => [
         'date' => '2026-04-25',
         'items' => [

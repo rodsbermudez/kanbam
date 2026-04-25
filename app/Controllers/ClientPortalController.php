@@ -240,8 +240,8 @@ class ClientPortalController extends BaseController
                                        ->orderBy('created_at', 'DESC')
                                        ->findAll();
         
-        // Converter XML para HTML
-        $htmlContent = XmlToHtml::convert($report->xml_content);
+        // Converter XML para HTML (client portal = true para ocultar senhas)
+        $htmlContent = XmlToHtml::convert($report->xml_content, true);
         
         $data = [
             'title'           => 'Relatório: ' . esc($report->title),

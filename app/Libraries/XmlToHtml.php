@@ -9,9 +9,12 @@ class XmlToHtml
 {
     /**
      * Converte conteúdo XML em HTML formatado
+     * @param bool $isClientPortal Se true, remove campos sensíveis (senhas SSH, etc)
      */
-    public static function convert(string $xmlContent): string
+    public static function convert(string $xmlContent, bool $isClientPortal = false): string
     {
+        self::$hideSensitiveData = $isClientPortal;
+        
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string($xmlContent);
         
@@ -40,8 +43,12 @@ class XmlToHtml
         
         $html .= '</div>';
         
+        self::$hideSensitiveData = false;
+        
         return $html;
     }
+    
+    private static bool $hideSensitiveData = false;
     
     /**
      * Renderiza o cabeçalho do relatório
@@ -128,6 +135,12 @@ class XmlToHtml
             $key = esc($item['key'] ?? '');
             $value = esc($item['value'] ?? '');
             $status = esc($item['status'] ?? 'default');
+            
+            // Ocultar senhas no portal do cliente
+            if (self::$hideSensitiveData && in_array(strtolower($key), ['ssh password', 'senha ssh', 'password', 'senha', 'ftp password', 'senha ftp'])) {
+                $value = '****';
+            }
+            
             $badgeClass = self::getStatusClass($status);
             
             $rows .= '<tr>' .
