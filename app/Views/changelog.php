@@ -4,6 +4,16 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.3.0' => [
+        'date' => '2026-04-26',
+        'items' => [
+            '<strong>API:</strong> Filtros de data (today, this_week, next_week, this_month, next_month).',
+            '<strong>API:</strong> Criar projeto (POST /api/projects).',
+            '<strong>API:</strong> Editar projeto (PUT /api/projects/:id).',
+            '<strong>Skill:</strong> Nova skill em writable/patropi.yaml.',
+            '<strong>Skill:</strong> Comandos: pendentes, semana, atrasadas, mes, proxima_semana, proximo_mes.',
+        ]
+    ],
     '1.2.7' => [
         'date' => '2026-04-25',
         'items' => [
