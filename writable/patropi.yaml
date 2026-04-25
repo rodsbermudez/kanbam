@@ -81,6 +81,24 @@ commands:
       exclude_status: concluída,cancelada
     output: table_tarefas
 
+  proxima_semana:
+    description: Lista tarefas que vencem na próxima semana
+    endpoint: GET /api/tasks
+    params:
+      due_from: next_week
+      due_to: next_week
+      exclude_status: concluída,cancelada
+    output: table_tarefas
+
+  proximo_mes:
+    description: Lista tarefas do próximo mês
+    endpoint: GET /api/tasks
+    params:
+      due_from: next_month
+      due_to: next_month
+      exclude_status: concluída,cancelada
+    output: table_tarefas
+
   # --- CLIENTES ---
 
   clientes:
