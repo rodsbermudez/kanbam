@@ -28,6 +28,8 @@ $routes->group('api', function ($routes) {
     $routes->get('clients', 'ApiController::clients');
     $routes->get('clients/(:num)', 'ApiController::client/$1');
     $routes->get('clients/tag/(:alphanum)', 'ApiController::clientByTag/$1');
+    $routes->get('users', 'ApiController::users');
+    $routes->get('users/(:num)', 'ApiController::user/$1');
     $routes->get('projects', 'ApiController::projects');
     $routes->get('projects/(:num)', 'ApiController::project/$1');
     $routes->get('tasks', 'ApiController::tasks');

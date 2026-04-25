@@ -6,6 +6,7 @@ use App\Models\ClientModel;
 use App\Models\ProjectModel;
 use App\Models\TaskModel;
 use App\Models\TaskNoteModel;
+use App\Models\UserModel;
 
 class ApiController extends BaseController
 {
@@ -43,6 +44,38 @@ class ApiController extends BaseController
                              ->findAll();
 
         return $this->jsonResponse(['clients' => $clients]);
+    }
+
+    public function users()
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $userModel = new UserModel();
+        $users = $userModel->select('id, name, initials, color, is_admin')
+                         ->where('is_active', 1)
+                         ->orderBy('name', 'ASC')
+                         ->findAll();
+
+        return $this->jsonResponse(['users' => $users]);
+    }
+
+    public function user($id)
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->select('id, name, initials, color, is_admin')
+                         ->find($id);
+
+        if (!$user) {
+            return $this->jsonError('User not found', 404);
+        }
+
+        return $this->jsonResponse(['user' => $user]);
     }
 
     public function projects()

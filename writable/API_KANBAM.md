@@ -1,6 +1,6 @@
 # API Kanbam - Documentação para IA Assistente
 
-Base URL: `https://kanbam.seusite.com.br` (ou URL do seu servidor)
+Base URL: `https://projetos.patropicomunica.com.br`
 
 ## Autenticação
 
@@ -12,7 +12,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 **Exemplo de requisição:**
 ```bash
-curl -H "X-API-Token: kanbam-api-token-secret-2024" https://kanbam.seusite.com.br/api/clients
+curl -H "X-API-Token: kanbam-api-token-secret-2024" https://projetos.patropicomunica.com.br/api/clients
 ```
 
 ---
@@ -102,7 +102,58 @@ GET /api/clients/tag/:tag
 
 ---
 
-### 4. Listar Projetos
+### 4. Listar Usuários
+
+**Apenas leitura (GET)** - A IA pode apenas listar, sem editar/adicionar/remover.
+
+```
+GET /api/users
+```
+
+**Response:**
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Maria Silva",
+      "initials": "MA",
+      "color": "#FF5733",
+      "is_admin": true
+    }
+  ]
+}
+```
+
+---
+
+### 5. Ver Usuário por ID
+
+```
+GET /api/users/:id
+```
+
+**Parâmetros:**
+- `:id` -	ID do usuário
+
+**Exemplo:** `GET /api/users/1`
+
+**Response:**
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "Maria Silva",
+    "initials": "MA",
+    "color": "#FF5733",
+    "is_admin": true
+  }
+}
+```
+
+---
+
+### 6. Listar Projetos
 
 **Apenas leitura (GET)** - A IA pode apenas listar, sem editar/adicionar/remover.
 
@@ -145,7 +196,7 @@ GET /api/projects?client_id=1&status=active
 
 ---
 
-### 5. Ver Detalhes de um Projeto
+### 7. Ver Detalhes de um Projeto
 
 ```
 GET /api/projects/:id
@@ -176,7 +227,7 @@ GET /api/projects/:id
 
 ---
 
-### 6. Listar Tarefas
+### 8. Listar Tarefas
 
 **A IA tem controle total** - Pode criar, editar, listar e remover.
 
@@ -210,7 +261,7 @@ GET /api/tasks
 
 ---
 
-### 7. Ver Detalhes de uma Tarefa
+### 9. Ver Detalhes de uma Tarefa
 
 ```
 GET /api/tasks/:id
@@ -251,7 +302,7 @@ GET /api/tasks/:id
 
 ---
 
-### 8. Criar Tarefa
+### 10. Criar Tarefa
 
 ```
 POST /api/tasks
@@ -312,7 +363,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 9. Editar Tarefa
+### 11. Editar Tarefa
 
 ```
 PUT /api/tasks/:id
@@ -352,7 +403,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 10. Remover Tarefa
+### 12. Remover Tarefa
 
 ```
 DELETE /api/tasks/:id
@@ -370,7 +421,7 @@ DELETE /api/tasks/:id
 
 ---
 
-### 11. Listar Notas de uma Tarefa
+### 13. Listar Notas de uma Tarefa
 
 ```
 GET /api/tasks/:id/notes
@@ -398,7 +449,7 @@ GET /api/tasks/:id/notes
 
 ---
 
-### 12. Criar Nota
+### 14. Criar Nota
 
 ```
 POST /api/tasks/:id/notes
@@ -443,7 +494,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 13. Remover Nota
+### 15. Remover Nota
 
 ```
 DELETE /api/notes/:id
@@ -482,7 +533,7 @@ DELETE /api/notes/:id
 
 ### Criar uma nova tarefa para o Projeto 1:
 ```bash
-curl -X POST https://kanbam.seusite.com.br/api/tasks \
+curl -X POST https://projetos.patropicomunica.com.br/api/tasks \
   -H "Content-Type: application/json" \
   -H "X-API-Token: kanbam-api-token-secret-2024" \
   -d '{"project_id": 1, "title": "Criar logo", "due_date": "2024-02-01"}'
@@ -490,7 +541,7 @@ curl -X POST https://kanbam.seusite.com.br/api/tasks \
 
 ### Alterar o status de uma tarefa:
 ```bash
-curl -X PUT https://kanbam.seusite.com.br/api/tasks/5 \
+curl -X PUT https://projetos.patropicomunica.com.br/api/tasks/5 \
   -H "Content-Type: application/json" \
   -H "X-API-Token: kanbam-api-token-secret-2024" \
   -d '{"status": "em desenvolvimento"}'
@@ -498,7 +549,7 @@ curl -X PUT https://kanbam.seusite.com.br/api/tasks/5 \
 
 ### Adicionar uma nota a uma tarefa:
 ```bash
-curl -X POST https://kanbam.seusite.com.br/api/tasks/5/notes \
+curl -X POST https://projetos.patropicomunica.com.br/api/tasks/5/notes \
   -H "Content-Type: application/json" \
   -H "X-API-Token: kanbam-api-token-secret-2024" \
   -d '{"note": "Cliente aprova o layout inicial"}'
@@ -507,7 +558,7 @@ curl -X POST https://kanbam.seusite.com.br/api/tasks/5/notes \
 ### Ver todas as tarefas de um projeto:
 ```bash
 curl -H "X-API-Token: kanbam-api-token-secret-2024" \
-  "https://kanbam.seusite.com.br/api/tasks?project_id=1"
+  "https://projetos.patropicomunica.com.br/api/tasks?project_id=1"
 ```
 
 ---
