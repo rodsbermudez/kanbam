@@ -154,6 +154,76 @@ class ApiController extends BaseController
         return $this->jsonResponse(['project' => $project]);
     }
 
+    public function createProject()
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $data = $this->request->getJSON(true);
+
+        if (empty($data['name'])) {
+            return $this->jsonError('name is required');
+        }
+
+        $projectModel = new ProjectModel();
+        $projectData = [
+            'name' => $data['name'],
+            'description' => $data['description'] ?? '',
+            'client_id' => $data['client_id'] ?? null,
+            'status' => $data['status'] ?? 'active',
+            'is_visible_to_client' => $data['is_visible_to_client'] ?? false,
+            'start_date' => $data['start_date'] ?? null,
+            'end_date' => $data['end_date'] ?? null,
+        ];
+
+        if ($projectModel->save($projectData)) {
+            $projectId = $projectModel->getInsertID();
+            $project = $projectModel->find($projectId);
+            return $this->jsonResponse(['project' => $project, 'message' => 'Project created'], 201);
+        }
+
+        return $this->jsonError(implode(', ', $projectModel->errors()));
+    }
+
+    public function updateProject($id)
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($id);
+
+        if (!$project) {
+            return $this->jsonError('Project not found', 404);
+        }
+
+        $data = $this->request->getJSON(true);
+        $updateData = [];
+
+        if (isset($data['name'])) $updateData['name'] = $data['name'];
+        if (isset($data['description'])) $updateData['description'] = $data['description'];
+        if (isset($data['client_id'])) $updateData['client_id'] = $data['client_id'];
+        if (isset($data['status'])) $updateData['status'] = $data['status'];
+        if (isset($data['is_visible_to_client'])) $updateData['is_visible_to_client'] = $data['is_visible_to_client'];
+        if (isset($data['start_date'])) $updateData['start_date'] = $data['start_date'];
+        if (isset($data['end_date'])) $updateData['end_date'] = $data['end_date'];
+
+        if (empty($updateData)) {
+            return $this->jsonError('No data to update');
+        }
+
+        $updateData['id'] = $id;
+        
+        if ($projectModel->save($updateData)) {
+            $updatedProject = $projectModel->find($id);
+            return $this->jsonResponse(['project' => $updatedProject, 'message' => 'Project updated']);
+        }
+
+        return $this->jsonError(implode(', ', $projectModel->errors()));
+    }
+
     public function tasks()
     {
         if (!$this->authenticate()) {
@@ -169,6 +239,9 @@ class ApiController extends BaseController
         $userId = $this->request->getGet('user_id');
         $status = $this->request->getGet('status');
         $projectId = $this->request->getGet('project_id');
+        $dueFrom = $this->request->getGet('due_from');
+        $dueTo = $this->request->getGet('due_to');
+        $excludeStatus = $this->request->getGet('exclude_status');
 
         if ($userId) {
             $builder->where('tasks.user_id', $userId);
@@ -182,9 +255,58 @@ class ApiController extends BaseController
             $builder->where('tasks.project_id', $projectId);
         }
 
-        $tasks = $builder->orderBy('tasks.created_at', 'DESC')->findAll();
+        if ($excludeStatus) {
+            $statuses = array_map('trim', explode(',', $excludeStatus));
+            $builder->whereNotIn('tasks.status', $statuses);
+        }
+
+        if ($dueFrom) {
+            $fromDate = $this->parseRelativeDate($dueFrom);
+            if ($fromDate) {
+                $builder->where('tasks.due_date >=', $fromDate);
+            }
+        }
+
+        if ($dueTo) {
+            $toDate = $this->parseRelativeDate($dueTo);
+            if ($toDate) {
+                $builder->where('tasks.due_date <=', $toDate);
+            }
+        }
+
+        $tasks = $builder->orderBy('tasks.due_date', 'ASC')->findAll();
 
         return $this->jsonResponse(['tasks' => $tasks]);
+    }
+
+    private function parseRelativeDate(string $date): ?string
+    {
+        $today = new \DateTime();
+        
+        switch (strtolower($date)) {
+            case 'today':
+                return $today->format('Y-m-d');
+            case 'tomorrow':
+                return (clone $today)->modify('+1 day')->format('Y-m-d');
+            case 'yesterday':
+                return (clone $today)->modify('-1 day')->format('Y-m-d');
+            case 'this_week':
+                return $today->format('Y-m-d');
+            case 'next_week':
+                return (clone $today)->modify('+7 days')->format('Y-m-d');
+            case 'last_week':
+                return (clone $today)->modify('-7 days')->format('Y-m-d');
+            case 'this_month':
+                return $today->format('Y-m-d');
+            case 'next_month':
+                return (clone $today)->modify('+1 month')->format('Y-m-d');
+            default:
+                $parsed = date_parse($date);
+                if ($parsed && $parsed['year']) {
+                    return $parsed['year'] . '-' . str_pad($parsed['month'], 2, '0', STR_PAD_LEFT) . '-' . str_pad($parsed['day'], 2, '0', STR_PAD_LEFT);
+                }
+                return null;
+        }
     }
 
     public function task($id)

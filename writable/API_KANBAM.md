@@ -227,7 +227,93 @@ GET /api/projects/:id
 
 ---
 
-### 8. Listar Tarefas
+### 8. Criar Projeto
+
+```
+POST /api/projects
+```
+
+**Headers:**
+```
+Content-Type: application/json
+X-API-Token: kanbam-api-token-secret-2024
+```
+
+**Body:**
+```json
+{
+  "name": "Nome do Projeto",
+  "description": "Descrição opcional",
+  "client_id": 1,
+  "status": "active",
+  "is_visible_to_client": true,
+  "start_date": "2024-01-15",
+  "end_date": "2024-02-15"
+}
+```
+
+**Campos obrigatórios:**
+- `name` - Nome do projeto
+
+**Campos opcionais:**
+- `description` - Descrição
+- `client_id` - ID do cliente
+- `status` - Status (padrão: "active")
+- `is_visible_to_client` - Visível para o cliente (padrão: false)
+- `start_date` - Data de início (YYYY-MM-DD)
+- `end_date` - Data de término (YYYY-MM-DD)
+
+**Status válidos:**
+- `active` - Projeto ativo
+- `concluded` - Projeto concluído
+
+**Response (201 Created):**
+```json
+{
+  "project": {
+    "id": 5,
+    "name": "Nome do Projeto",
+    "status": "active"
+  },
+  "message": "Project created"
+}
+```
+
+---
+
+### 9. Editar Projeto
+
+```
+PUT /api/projects/:id
+```
+
+**Parâmetros:**
+- `:id` - ID do projeto
+
+**Body (envie apenas os campos que deseja alterar):**
+```json
+{
+  "name": "Novo nome",
+  "status": "concluded",
+  "is_visible_to_client": false
+}
+```
+
+**Response:**
+```json
+{
+  "project": {
+    "id": 1,
+    "name": "Novo nome",
+    "status": "concluded"
+  },
+  "message": "Project updated"
+}
+```
+
+---
+
+### 10. Listar Tarefas
 
 **A IA tem controle total** - Pode criar, editar, listar e remover.
 
@@ -239,6 +325,27 @@ GET /api/tasks
 - `?project_id=1` - Filtrar tarefas por projeto
 - `?status=em desenvolvimento` - Filtrar por status
 - `?user_id=1` - Filtrar por usuário
+- `?due_from=today` - A partir de hoje (filtro de data)
+- `?due_to=this_week` - Até esta semana (filtro de data)
+- `?exclude_status=concluída,cancelada` - Excluir status
+
+**Filtros de data válidos:**
+- `today` - Hoje
+- `tomorrow` - Amanhã
+- `yesterday` - Ontem
+- `this_week` - Esta semana
+- `next_week` - Próxima semana
+- `last_week` - Semana passada
+- `this_month` - Este mês
+- `next_month` - Próximo mês
+- `YYYY-MM-DD` - Data específica
+
+**Exemplos:**
+```
+GET /api/tasks?exclude_status=concluída,cancelada
+GET /api/tasks?due_from=today&due_to=this_week
+GET /api/tasks?user_id=1&due_from=today&due_to=next_week
+```
 
 **Response:**
 ```json
@@ -267,7 +374,7 @@ GET /api/tasks
 
 ---
 
-### 9. Ver Detalhes de uma Tarefa
+### 11. Ver Detalhes de uma Tarefa
 
 ```
 GET /api/tasks/:id
@@ -314,7 +421,7 @@ GET /api/tasks/:id
 
 ---
 
-### 10. Criar Tarefa
+### 12. Criar Tarefa
 
 ```
 POST /api/tasks
@@ -375,7 +482,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 11. Editar Tarefa
+### 13. Editar Tarefa
 
 ```
 PUT /api/tasks/:id
@@ -415,7 +522,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 12. Remover Tarefa
+### 14. Remover Tarefa
 
 ```
 DELETE /api/tasks/:id
@@ -433,7 +540,7 @@ DELETE /api/tasks/:id
 
 ---
 
-### 13. Listar Notas de uma Tarefa
+### 15. Listar Notas de uma Tarefa
 
 ```
 GET /api/tasks/:id/notes
@@ -461,7 +568,7 @@ GET /api/tasks/:id/notes
 
 ---
 
-### 14. Criar Nota
+### 16. Criar Nota
 
 ```
 POST /api/tasks/:id/notes
@@ -506,7 +613,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 15. Remover Nota
+### 17. Remover Nota
 
 ```
 DELETE /api/notes/:id

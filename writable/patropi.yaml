@@ -1,0 +1,375 @@
+name: Patropi - Kanbam
+description: Skill para gerenciar projetos, tarefas e clientes no Kanbam via API
+tags: [kanbam, projetos, tarefas, gestão]
+base_url: https://projetos.patropicomunica.com.br
+
+# Autenticação (automática em todas as requisições)
+auth:
+  header: X-API-Token
+  value: kanbam-api-token-secret-2024
+
+# =============================================================================
+# MAPEAMENTO DE STATUS
+# =============================================================================
+# Use esses valores ao criar ou editar tarefas/projetos
+
+status_tarefa:
+  # Novos comandos → Status API
+  nova: não iniciadas
+  não iniciada: não iniciadas
+  em progresso: em desenvolvimento
+  em desenvolvimento: em desenvolvimento
+  aguardando aprovação nossa: aprovação
+  aguardando aprovação: aprovação
+  aprovação: aprovação
+  aguardando cliente: com cliente
+  com cliente: com cliente
+  precisa ajuste: ajustes
+  ajustes: ajustes
+  aprovada: aprovada
+  implementada: implementada
+  concluída: concluída
+  concluida: concluída
+  finalizada: concluída
+  cancelada: cancelada
+
+status_projeto:
+  ativo: active
+  active: active
+  concluído: concluded
+  concluded: concluded
+
+# =============================================================================
+# COMANDOS SIMPLIFICADOS
+# =============================================================================
+# Execute esses comandos diretamente via /patropi comando
+
+commands:
+  # --- TAREFAS ---
+  
+  pendentes:
+    description: Lista tarefas pendentes (não concluídas, não canceladas)
+    endpoint: GET /api/tasks
+    params:
+      exclude_status: concluída,cancelada
+      order_by: due_date
+    output: table_tarefas
+
+  semana:
+    description: Lista tarefas que vencem esta semana
+    endpoint: GET /api/tasks
+    params:
+      due_from: today
+      due_to: this_week
+      exclude_status: concluída,cancelada
+    output: table_tarefas
+
+  atrasadas:
+    description: Lista tarefas atrasadas
+    endpoint: GET /api/tasks
+    params:
+      due_to: yesterday
+      exclude_status: concluída,cancelada
+    output: table_tarefas
+
+  mes:
+    description: Lista tarefas deste mês
+    endpoint: GET /api/tasks
+    params:
+      due_from: this_month
+      due_to: this_month
+      exclude_status: concluída,cancelada
+    output: table_tarefas
+
+  # --- CLIENTES ---
+
+  clientes:
+    description: Lista todos os clientes
+    endpoint: GET /api/clients
+    output: table_clientes
+
+  cliente:
+    description: Busca cliente por tag
+    endpoint: GET /api/clients/tag/{tag}
+    params:
+      tag: {tag}
+    output: detail_cliente
+
+  # --- PROJETOS ---
+
+  projetos:
+    description: Lista projetos ativos
+    endpoint: GET /api/projects
+    params:
+      status: active
+    output: table_projetos
+
+  projetos-cliente:
+    description: Lista projetos ativos de um cliente
+    endpoint: GET /api/projects
+    params:
+      client_id: {client_id}
+      status: active
+    output: table_projetos
+
+  projeto:
+    description: Detalhes de um projeto + tarefas abertas
+    endpoint: GET /api/projects/{id}
+    params:
+      id: {id}
+    output: detail_projeto
+
+  # --- USUÁRIOS ---
+
+  usuarios:
+    description: Lista todos os usuários
+    endpoint: GET /api/users
+    output: table_usuarios
+
+# =============================================================================
+# ENDPOINTS COMPLETOS
+# =============================================================================
+# Use esses endpoints diretamente quando necessário
+
+endpoints:
+  # --- CLIENTES ---
+  listar_clientes:
+    method: GET
+    path: /api/clients
+    description: Lista todos os clientes
+
+  cliente_por_id:
+    method: GET
+    path: /api/clients/{id}
+    description: Busca cliente por ID
+
+  cliente_por_tag:
+    method: GET
+    path: /api/clients/tag/{tag}
+    description: Busca cliente por tag
+
+  # --- USUÁRIOS ---
+  listar_usuarios:
+    method: GET
+    path: /api/users
+    description: Lista usuários ativos
+
+  usuario_por_id:
+    method: GET
+    path: /api/users/{id}
+    description: Busca usuário por ID
+
+  # --- PROJETOS ---
+  listar_projetos:
+    method: GET
+    path: /api/projects
+    description: Lista projetos (aceita filtros)
+    params:
+      - client_id
+      - status (active/concluded)
+      - is_visible_to_client
+
+  projeto_por_id:
+    method: GET
+    path: /api/projects/{id}
+    description: Detalhes de um projeto
+
+  criar_projeto:
+    method: POST
+    path: /api/projects
+    description: Criar novo projeto
+    body_required:
+      - name
+    body_optional:
+      - description
+      - client_id
+      - status (active/concluded)
+      - is_visible_to_client
+      - start_date (YYYY-MM-DD)
+      - end_date (YYYY-MM-DD)
+
+  editar_projeto:
+    method: PUT
+    path: /api/projects/{id}
+    description: Editar projeto
+    body_fields:
+      - name
+      - description
+      - client_id
+      - status
+      - is_visible_to_client
+      - start_date
+      - end_date
+
+  # --- TAREFAS ---
+  listar_tarefas:
+    method: GET
+    path: /api/tasks
+    description: Lista tarefas com filtros
+    params:
+      - user_id
+      - project_id
+      - status
+      - due_from (today/tomorrow/this_week/next_week/this_month/next_month/YYYY-MM-DD)
+      - due_to (today/tomorrow/this_week/next_week/this_month/next_month/YYYY-MM-DD)
+      - exclude_status (concluída,cancelada)
+      - order_by (due_date)
+
+  tarefa_por_id:
+    method: GET
+    path: /api/tasks/{id}
+    description: Detalhes de uma tarefa (inclui notas)
+
+  criar_tarefa:
+    method: POST
+    path: /api/tasks
+    description: Criar nova tarefa
+    body_required:
+      - project_id
+      - title
+    body_optional:
+      - description
+      - status (não iniciadas/em desenvolvimento/aprovação/com cliente/ajustes/aprovada/implementada/concluída/cancelada)
+      - user_id
+      - due_date (YYYY-MM-DD)
+
+  editar_tarefa:
+    method: PUT
+    path: /api/tasks/{id}
+    description: Editar tarefa
+    body_fields:
+      - title
+      - description
+      - status
+      - user_id
+      - due_date
+
+  excluir_tarefa:
+    method: DELETE
+    path: /api/tasks/{id}
+    description: Remover tarefa
+
+  # --- NOTAS ---
+  listar_notas:
+    method: GET
+    path: /api/tasks/{id}/notes
+    description: Lista notas de uma tarefa
+
+  criar_nota:
+    method: POST
+    path: /api/tasks/{id}/notes
+    description: Criar nota numa tarefa
+    body_required:
+      - note
+    body_optional:
+      - user_id
+
+  excluir_nota:
+    method: DELETE
+    path: /api/notes/{id}
+    description: Remover nota
+
+# =============================================================================
+# FORMATOS DE OUTPUT
+# =============================================================================
+
+outputs:
+  table_tarefas:
+    format: markdown_table
+    columns:
+      - ID
+      - Tarefa
+      - Projeto (Tag)
+      - Responsável
+      - Data
+    header: "## 📋 Tarefas ({count})\n"
+
+  table_clientes:
+    format: markdown_table
+    columns:
+      - ID
+      - Nome
+      - Tag
+      - Responsável
+      - Email
+    header: "## 🏢 Clientes ({count})\n"
+
+  table_projetos:
+    format: markdown_table
+    columns:
+      - ID
+      - Nome
+      - Cliente (Tag)
+      - Status
+    header: "## 📁 Projetos ({count})\n"
+
+  table_usuarios:
+    format: markdown_table
+    columns:
+      - ID
+      - Nome
+      - Iniciais
+    header: "## 👥 Usuários ({count})\n"
+
+  detail_projeto:
+    format: sections
+    sections:
+      - header: Projeto
+      - tasks: Lista de tarefas abertas do projeto
+
+  detail_cliente:
+    format: detail
+    fields:
+      - name
+      - tag
+      - responsible_name
+      - responsible_email
+
+# =============================================================================
+# EXEMPLOS DE USO
+# =============================================================================
+
+examples:
+  - command: /patropi pendentes
+    description: Lista todas as tarefas pendentes
+
+  - command: /patropi semana
+    description: Lista tarefas que vencem esta semana
+
+  - command: /patropi atrasadas
+    description: Lista tarefas atrasadas
+
+  - command: /patropi projetos
+    description: Lista projetos ativos
+
+  - command: /patropi clientes
+    description: Lista todos os clientes
+
+  # Comandos que a IA pode executar sozinha
+
+  - type: ia_action
+    trigger: "criar tarefa"
+    action: POST /api/tasks
+    body:
+      project_id: 1
+      title: "{descrição da tarefa}"
+      due_date: "{data}"
+
+  - type: ia_action
+    trigger: "adicionar nota"
+    action: POST /api/tasks/{id}/notes
+    body:
+      note: "{texto da nota}"
+
+  - type: ia_action
+    trigger: "mudar status"
+    action: PUT /api/tasks/{id}
+    body:
+      status: "{status}"
+
+  - type: ia_action
+    trigger: "criar projeto"
+    action: POST /api/projects
+    body:
+      name: "{nome do projeto}"
+      client_id: "{id do cliente}"

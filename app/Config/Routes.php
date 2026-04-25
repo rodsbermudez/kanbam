@@ -32,6 +32,8 @@ $routes->group('api', function ($routes) {
     $routes->get('users/(:num)', 'ApiController::user/$1');
     $routes->get('projects', 'ApiController::projects');
     $routes->get('projects/(:num)', 'ApiController::project/$1');
+    $routes->post('projects', 'ApiController::createProject');
+    $routes->put('projects/(:num)', 'ApiController::updateProject/$1');
     $routes->get('tasks', 'ApiController::tasks');
     $routes->get('tasks/(:num)', 'ApiController::task/$1');
     $routes->post('tasks', 'ApiController::createTask');
