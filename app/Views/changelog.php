@@ -4,6 +4,15 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.2.1' => [
+        'date' => '2026-04-24',
+        'items' => [
+            '<strong>API:</strong> Novo endpoint para IA assistente gerenciar tarefas e notas.',
+            '<strong>API:</strong> Endpoints para listar clientes e projetos (apenas leitura).',
+            '<strong>API:</strong> Autenticação via token no header X-API-Token.',
+            '<strong>API:</strong> Documentação completa em writable/API_KANBAM.md.',
+        ]
+    ],
     '1.2.0' => [
         'date' => '2026-04-24',
         'items' => [

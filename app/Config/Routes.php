@@ -23,6 +23,21 @@ $routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) 
 // --- Rotas para Relatórios Externos (n8n, etc.) ---
 $routes->get('reports/daily-summary', 'ExternalReportController::dailyUserSummary');
 
+// --- API para IA Assistente ---
+$routes->group('api', function ($routes) {
+    $routes->get('clients', 'ApiController::clients');
+    $routes->get('projects', 'ApiController::projects');
+    $routes->get('projects/(:num)', 'ApiController::project/$1');
+    $routes->get('tasks', 'ApiController::tasks');
+    $routes->get('tasks/(:num)', 'ApiController::task/$1');
+    $routes->post('tasks', 'ApiController::createTask');
+    $routes->put('tasks/(:num)', 'ApiController::updateTask/$1');
+    $routes->delete('tasks/(:num)', 'ApiController::deleteTask/$1');
+    $routes->get('tasks/(:num)/notes', 'ApiController::taskNotes/$1');
+    $routes->post('tasks/(:num)/notes', 'ApiController::createTaskNote/$1');
+    $routes->delete('notes/(:num)', 'ApiController::deleteNote/$1');
+});
+
 // --- Rotas de Autenticação (Admin/Equipe) ---
 $routes->get('/', static fn () => redirect()->to('login')); // Rota principal redireciona para a página de login
 
