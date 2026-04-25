@@ -52,12 +52,55 @@ class ApiController extends BaseController
         }
 
         $projectModel = new ProjectModel();
-        $projects = $projectModel->select('projects.id, projects.name, projects.status, projects.is_visible_to_client, projects.client_id, clients.name as client_name, clients.tag as client_tag')
-                                ->join('clients', 'clients.id = projects.client_id', 'left')
-                                ->orderBy('projects.name', 'ASC')
-                                ->findAll();
+        $builder = $projectModel->select('projects.id, projects.name, projects.status, projects.is_visible_to_client, projects.client_id, clients.name as client_name, clients.tag as client_tag')
+                                ->join('clients', 'clients.id = projects.client_id', 'left');
+
+        $clientId = $this->request->getGet('client_id');
+        $status = $this->request->getGet('status');
+
+        if ($clientId) {
+            $builder->where('projects.client_id', $clientId);
+        }
+
+        if ($status) {
+            $builder->where('projects.status', $status);
+        }
+
+        $projects = $builder->orderBy('projects.name', 'ASC')->findAll();
 
         return $this->jsonResponse(['projects' => $projects]);
+    }
+
+    public function client($id)
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $clientModel = new ClientModel();
+        $client = $clientModel->find($id);
+
+        if (!$client) {
+            return $this->jsonError('Client not found', 404);
+        }
+
+        return $this->jsonResponse(['client' => $client]);
+    }
+
+    public function clientByTag($tag)
+    {
+        if (!$this->authenticate()) {
+            return $this->jsonError('Unauthorized', 401);
+        }
+
+        $clientModel = new ClientModel();
+        $client = $clientModel->where('tag', strtoupper($tag))->first();
+
+        if (!$client) {
+            return $this->jsonError('Client not found', 404);
+        }
+
+        return $this->jsonResponse(['client' => $client]);
     }
 
     public function project($id)

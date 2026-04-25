@@ -26,6 +26,8 @@ $routes->get('reports/daily-summary', 'ExternalReportController::dailyUserSummar
 // --- API para IA Assistente ---
 $routes->group('api', function ($routes) {
     $routes->get('clients', 'ApiController::clients');
+    $routes->get('clients/(:num)', 'ApiController::client/$1');
+    $routes->get('clients/tag/(:alphanum)', 'ApiController::clientByTag/$1');
     $routes->get('projects', 'ApiController::projects');
     $routes->get('projects/(:num)', 'ApiController::project/$1');
     $routes->get('tasks', 'ApiController::tasks');

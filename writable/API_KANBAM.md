@@ -46,12 +46,84 @@ GET /api/clients
 
 ---
 
-### 2. Listar Projetos
+### 2. Ver Cliente por ID
+
+```
+GET /api/clients/:id
+```
+
+**Parâmetros:**
+- `:id` -	ID do cliente
+
+**Exemplo:** `GET /api/clients/1`
+
+**Response:**
+```json
+{
+  "client": {
+    "id": 1,
+    "name": "Empresa X",
+    "tag": "EX",
+    "responsible_name": "João Silva",
+    "responsible_email": "joao@empresax.com.br",
+    "color": "#FF5733",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+### 3. Ver Cliente por Tag
+
+```
+GET /api/clients/tag/:tag
+```
+
+**Parâmetros:**
+- `:tag` - Tag do cliente (ex: "EX")
+
+**Exemplo:** `GET /api/clients/tag/EX`
+
+**Response:**
+```json
+{
+  "client": {
+    "id": 1,
+    "name": "Empresa X",
+    "tag": "EX",
+    "responsible_name": "João Silva",
+    "responsible_email": "joao@empresax.com.br",
+    "color": "#FF5733",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+### 4. Listar Projetos
 
 **Apenas leitura (GET)** - A IA pode apenas listar, sem editar/adicionar/remover.
 
 ```
 GET /api/projects
+```
+
+**Parâmetros opcionais (query string):**
+- `?client_id=1` - Filtrar projetos por cliente
+- `?status=active` - Filtrar projetos por status
+- `?client_id=1&status=active` - Combinar filtros (ex: todos projetos ativos do cliente)
+
+**Status válidos:**
+- `active` - Projeto ativo
+- `concluded` - Projeto concluído
+
+**Exemplos de uso:**
+```
+GET /api/projects?client_id=1
+GET /api/projects?status=active
+GET /api/projects?client_id=1&status=active
 ```
 
 **Response:**
@@ -73,7 +145,7 @@ GET /api/projects
 
 ---
 
-### 3. Ver Detalhes de um Projeto
+### 5. Ver Detalhes de um Projeto
 
 ```
 GET /api/projects/:id
@@ -104,7 +176,7 @@ GET /api/projects/:id
 
 ---
 
-### 4. Listar Tarefas
+### 6. Listar Tarefas
 
 **A IA tem controle total** - Pode criar, editar, listar e remover.
 
@@ -138,7 +210,7 @@ GET /api/tasks
 
 ---
 
-### 5. Ver Detalhes de uma Tarefa
+### 7. Ver Detalhes de uma Tarefa
 
 ```
 GET /api/tasks/:id
@@ -179,7 +251,7 @@ GET /api/tasks/:id
 
 ---
 
-### 6. Criar Tarefa
+### 8. Criar Tarefa
 
 ```
 POST /api/tasks
@@ -240,7 +312,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 7. Editar Tarefa
+### 9. Editar Tarefa
 
 ```
 PUT /api/tasks/:id
@@ -280,7 +352,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 8. Remover Tarefa
+### 10. Remover Tarefa
 
 ```
 DELETE /api/tasks/:id
@@ -298,7 +370,7 @@ DELETE /api/tasks/:id
 
 ---
 
-### 9. Listar Notas de uma Tarefa
+### 11. Listar Notas de uma Tarefa
 
 ```
 GET /api/tasks/:id/notes
@@ -326,7 +398,7 @@ GET /api/tasks/:id/notes
 
 ---
 
-### 10. Criar Nota
+### 12. Criar Nota
 
 ```
 POST /api/tasks/:id/notes
@@ -371,7 +443,7 @@ X-API-Token: kanbam-api-token-secret-2024
 
 ---
 
-### 11. Remover Nota
+### 13. Remover Nota
 
 ```
 DELETE /api/notes/:id

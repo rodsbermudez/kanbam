@@ -4,6 +4,16 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.2.2' => [
+        'date' => '2026-04-24',
+        'items' => [
+            '<strong>API:</strong> Busca projetos por cliente (client_id).',
+            '<strong>API:</strong> Busca projetos por status.',
+            '<strong>API:</strong> Combinar filtros (cliente + status).',
+            '<strong>API:</strong> Busca cliente por ID.',
+            '<strong>API:</strong> Busca cliente por tag.',
+        ]
+    ],
     '1.2.1' => [
         'date' => '2026-04-24',
         'items' => [
