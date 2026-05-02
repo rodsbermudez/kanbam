@@ -161,4 +161,69 @@ class AgenciesController extends BaseController
 
         return redirect()->back()->with('error', 'Erro ao desvincular cliente.');
     }
+
+    /**
+     * Habilita o acesso da agência e gera uma senha
+     */
+    public function enableAccess($agencyId)
+    {
+        $clientAccessModel = new \App\Models\ClientAccessModel();
+
+        // Gera um token único e uma senha aleatória
+        $token = bin2hex(random_bytes(32));
+        $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'), 0, 12);
+
+        $data = [
+            'agency_id' => $agencyId,
+            'token'     => $token,
+            'password'  => $password, // O model fará o hash
+        ];
+
+        if ($clientAccessModel->save($data)) {
+            session()->setFlashdata('generated_password', $password);
+            return redirect()->to('/admin/agencies/' . $agencyId)->with('success', 'Acesso habilitado com sucesso. Token: ' . $token);
+        }
+
+        return redirect()->back()->with('error', 'Erro ao habilitar acesso.');
+    }
+
+    /**
+     * Gera nova senha para a agência
+     */
+    public function regeneratePassword($accessId)
+    {
+        $clientAccessModel = new \App\Models\ClientAccessModel();
+        $access = $clientAccessModel->find($accessId);
+
+        if (!$access || empty($access->agency_id)) {
+            return redirect()->back()->with('error', 'Acesso de agência não encontrado.');
+        }
+
+        $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'), 0, 12);
+        $clientAccessModel->update($accessId, ['password' => $password]);
+
+        session()->setFlashdata('generated_password', $password);
+        return redirect()->back()->with('success', 'Nova senha gerada com sucesso.');
+    }
+
+    /**
+     * Remove acesso da agência
+     */
+    public function deleteAccess($accessId)
+    {
+        $clientAccessModel = new \App\Models\ClientAccessModel();
+        $access = $clientAccessModel->find($accessId);
+
+        if (!$access || empty($access->agency_id)) {
+            return redirect()->back()->with('error', 'Acesso de agência não encontrado.');
+        }
+
+        $agencyId = $access->agency_id;
+
+        if ($clientAccessModel->delete($accessId)) {
+            return redirect()->to('/admin/agencies/' . $agencyId)->with('success', 'Acesso removido com sucesso.');
+        }
+
+        return redirect()->back()->with('error', 'Erro ao remover acesso.');
+    }
 }

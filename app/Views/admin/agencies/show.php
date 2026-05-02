@@ -12,11 +12,67 @@
 
     <div class="row g-4">
         <!-- Dados da Agência -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Dados da Agência</h5>
+        <div className="col-md-4">
+            <div className="card">
+                <div className="card-header">
+                    <h5 className="mb-0">Dados da Agência</h5>
                 </div>
+                <div className="card-body">
+                    <p><strong>Contato:</strong> <?= esc($agency->contact_name ?? '-') ?></p>
+                    <p><strong>Email:</strong> <?= esc($agency->email ?? '-') ?></p>
+                    <p><strong>Telefone:</strong> <?= esc($agency->phone ?? '-') ?></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acesso ao Portal -->
+        <div className="col-md-4">
+            <div className="card">
+                <div className="card-header">
+                    <h5 className="mb-0"><i className="bi bi-shield-lock me-2"></i>Acesso ao Portal</h5>
+                </div>
+                <div className="card-body">
+                    <?php if (!empty($access)): ?>
+                        <p>O acesso para esta agência está <strong>habilitado</strong>.</p>
+                        <div className="mb-3">
+                            <label className="form-label">Link de Acesso:</label>
+                            <div className="input-group">
+                                <input type="text" className="form-control" value="<?= site_url('portal/' . $access->token) ?>" readonly id="accessLink">
+                                <button className="btn btn-outline-secondary" type="button" id="copyLinkBtn"><i className="bi bi-clipboard"></i></button>
+                            </div>
+                        </div>
+
+                        <?php if (session()->has('generated_password')): ?>
+                            <div className="alert alert-success">
+                                <strong>Nova Senha Gerada:</strong>
+                                <div className="input-group mt-2">
+                                    <input type="text" className="form-control" value="<?= esc(session('generated_password')) ?>" readonly id="accessPassword">
+                                    <button className="btn btn-outline-secondary" type="button" id="copyPasswordBtn"><i className="bi bi-clipboard"></i></button>
+                                </div>
+                                <small className="d-block mt-2">Anota esta senha. Ela não será exibida novamente.</small>
+                            </div>
+                        <?php endif; ?>
+
+                        <div className="d-grid gap-2">
+                            <form action="<?= site_url('admin/agencies/' . $agency->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
+                                <?= csrf_field() ?>
+                                <button type="submit" className="btn btn-warning w-100">Gerar Nova Senha</button>
+                            </form>
+                            <form action="<?= site_url('admin/agencies/' . $agency->id . '/delete-access') ?>" method="post" onsubmit="return confirm('Tem certeza que deseja remover permanentemente o acesso desta agência ao portal?');">
+                                <?= csrf_field() ?>
+                                <button type="submit" className="btn btn-danger w-100">Remover Acesso</button>
+                            </form>
+                        </div>
+                    <?php else: ?>
+                        <p>A agência ainda não tem acesso ao portal.</p>
+                        <form action="<?= site_url('admin/agencies/' . $agency->id . '/enable-access') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <button type="submit" className="btn btn-success w-100">Habilitar Acesso e Gerar Senha</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
                 <div class="card-body">
                     <p><strong>Contato:</strong> <?= esc($agency->contact_name ?? '-') ?></p>
                     <p><strong>Email:</strong> <?= esc($agency->email ?? '-') ?></p>
