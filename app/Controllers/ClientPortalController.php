@@ -41,18 +41,49 @@ class ClientPortalController extends BaseController
             return redirect()->back()->with('error', 'Senha inválida.');
         }
 
-        // Login bem-sucedido
+        $session = session();
+
+        // SE É AGÊNCIA
+        if (!empty($access->agency_id)) {
+            $sessionData = [
+                'client_portal_access_id'   => $access->id,
+                'client_portal_client_id'   => null, // será definido quando escolher um cliente
+                'client_portal_agency_id'  => $access->agency_id,
+                'client_portal_token'       => $token,
+                'is_client_portal_logged_in' => true,
+                'is_agency'               => true,
+            ];
+            $session->set($sessionData);
+
+            // Buscar clientes da agência
+            $clientModel = new ClientModel();
+            $agencyClients = $clientModel->where('agency_id', $access->agency_id)
+                                          ->orderBy('name', 'ASC')
+                                          ->findAll();
+
+            // Se só tem 1 cliente, já vai direto
+            if (count($agencyClients) == 1) {
+                $session->set('client_portal_client_id', $agencyClients[0]->id);
+                return redirect()->to('/portal/dashboard');
+            }
+
+            // Se tem vários, mostra lista para escolher
+            return redirect()->to('/portal/agency/select-client');
+        }
+
+        // SE É CLIENTE NORMAL
         $clientModel = new ClientModel();
         $client = $clientModel->find($access->client_id);
 
         $sessionData = [
             'client_portal_access_id'   => $access->id,
             'client_portal_client_id'   => $access->client_id,
-            'client_portal_client_name' => $client->name,
+            'client_portal_client_name' => $client->name ?? '',
             'client_portal_token'       => $token,
             'is_client_portal_logged_in' => true,
+            'is_agency'               => false,
         ];
-        session()->set($sessionData);
+        $session->set($sessionData);
 
         // Atualiza o último acesso
         $clientAccessModel->update($access->id, ['last_used_at' => date('Y-m-d H:i:s')]);
@@ -290,5 +321,43 @@ class ClientPortalController extends BaseController
         ];
         
         return view('client_portal/dashboard', $data);
+    }
+
+    public function selectClient()
+    {
+        // Só agências podem acessar
+        if (!session()->get('is_agency')) {
+            return redirect()->to('/portal/dashboard');
+        }
+
+        $clientModel = new ClientModel();
+        $clients = $clientModel->where('agency_id', session()->get('client_portal_agency_id'))
+                                 ->orderBy('name', 'ASC')
+                                 ->findAll();
+
+        return view('client_portal/select_client', [
+            'title'    => 'Selecionar Cliente',
+            'clients' => $clients,
+        ]);
+    }
+
+    public function switchClient($clientId)
+    {
+        // Só agências podem trocar
+        if (!session()->get('is_agency')) {
+            return redirect()->to('/portal/dashboard');
+        }
+
+        $clientModel = new ClientModel();
+        $client = $clientModel->where('id', $clientId)
+                               ->where('agency_id', session()->get('client_portal_agency_id'))
+                               ->first();
+
+        if (!$client) {
+            return redirect()->to('/portal/select-client')->with('error', 'Cliente não encontrado.');
+        }
+
+        session()->set('client_portal_client_id', $client->id);
+        return redirect()->to('/portal/dashboard');
     }
 }

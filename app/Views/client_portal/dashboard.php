@@ -145,9 +145,28 @@
     </div>
     <?php endif; ?>
 
-    <div class="sidebar-footer">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span>Olá, <?= esc(session()->get('client_portal_client_name')) ?></span>
+            <?php if (session()->get('is_agency')): ?>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Trocar Cliente
+                    </button>
+                    <ul class="dropdown-menu">
+                        <?php
+                            $clientModel = new \App\Models\ClientModel();
+                            $agencyClients = $clientModel->where('agency_id', session()->get('client_portal_agency_id'))
+                                                    ->orderBy('name', 'ASC')
+                                                    ->findAll();
+                            foreach ($agencyClients as $c): ?>
+                                <li><a class="dropdown-item <?= (session()->get('client_portal_client_id') == $c->id) ? 'active' : '' ?>" 
+                                       href="<?= site_url('portal/switch-client/' . $c->id) ?>">
+                                    <?= esc($c->name) ?> (<?= esc($c->tag) ?>)
+                                </a></li>
+                            <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
             <a href="<?= site_url('portal/logout') ?>" class="btn btn-sm btn-outline-secondary" title="Sair"><i class="bi bi-box-arrow-right"></i></a>
         </div>
         <div class="dropdown">
