@@ -109,13 +109,16 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // Grupo de rotas de ADMINISTRAÇÃO (requer permissão de admin)
     $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
-    // Gerenciamento de Agências
-    $routes->resource('agencies', ['controller' => 'Admin\AgenciesController']);
-    $routes->get('agencies/(:num)/delete', 'Admin\AgenciesController::delete/$1');
-    $routes->post('agencies/(:num)/linkclient', 'Admin\AgenciesController::linkClient/$1');
-    $routes->post('agencies/(:num)/unlinkclient/(:num)', 'Admin\AgenciesController::unlinkClient/$1/$2');
+        // Gerenciamento de Agências
+        $routes->resource('agencies', ['controller' => 'Admin\AgenciesController']);
+        $routes->get('agencies/(:num)/delete', 'Admin\AgenciesController::delete/$1');
+        $routes->post('agencies/(:num)/linkclient', 'Admin\AgenciesController::linkClient/$1');
+        $routes->post('agencies/(:num)/unlinkclient/(:num)', 'Admin\AgenciesController::unlinkClient/$1/$2');
+        $routes->post('agencies/(:num)/enable-access', 'Admin\AgenciesController::enableAccess/$1');
+        $routes->post('agencies/(:num)/regenerate-password', 'Admin\AgenciesController::regeneratePassword/$1');
+        $routes->post('agencies/(:num)/delete-access', 'Admin\AgenciesController::deleteAccess/$1');
 
-    // Gerenciamento de Usuários
+        // Gerenciamento de Usuários
     $routes->resource('users', ['controller' => 'Admin\UsersController']);
         $routes->get('users/(:num)/delete', 'Admin\UsersController::delete/$1');
 
