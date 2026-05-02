@@ -36,7 +36,7 @@
                             <label class="form-label">Link de Acesso:</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" value="<?= site_url('portal/' . $access->token) ?>" readonly id="accessLink">
-                                <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn"><i class="bi bi-clipboard"></i></button>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('accessLink')"><i class="bi bi-clipboard"></i></button>
                             </div>
                         </div>
 
@@ -45,18 +45,18 @@
                                 <strong>Nova Senha Gerada:</strong>
                                 <div class="input-group mt-2">
                                     <input type="text" class="form-control" value="<?= esc(session('generated_password')) ?>" readonly id="accessPassword">
-                                    <button class="btn btn-outline-secondary" type="button" id="copyPasswordBtn"><i class="bi bi-clipboard"></i></button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('accessPassword')"><i class="bi bi-clipboard"></i></button>
                                 </div>
                                 <small class="d-block mt-2">Anota esta senha. Ela não será exibida novamente.</small>
                             </div>
                         <?php endif; ?>
 
                         <div class="d-grid gap-2">
-                            <form action="<?= site_url('admin/agencies/' . $agency->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
+                            <form action="<?= site_url('admin/agencies/' . $access->id . '/regenerate-password') ?>" method="post" onsubmit="return confirm('Gerar uma nova senha invalidará a anterior. Deseja continuar?');">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-warning w-100">Gerar Nova Senha</button>
                             </form>
-                            <form action="<?= site_url('admin/agencies/' . $agency->id . '/delete-access') ?>" method="post" onsubmit="return confirm('Tem certeza que deseja remover permanentemente o acesso desta agência ao portal?');">
+                            <form action="<?= site_url('admin/agencies/' . $access->id . '/delete-access') ?>" method="post" onsubmit="return confirm('Tem certeza que deseja remover permanentemente o acesso desta agência ao portal?');">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-danger w-100">Remover Acesso</button>
                             </form>
@@ -139,5 +139,15 @@
         </div>
     </div>
 </main>
+
+<script>
+function copyToClipboard(elementId) {
+    var copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    alert("Copiado: " + copyText.value);
+}
+</script>
 
 <?= $this->include('partials/footer') ?>

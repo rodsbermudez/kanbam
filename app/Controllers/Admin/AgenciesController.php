@@ -185,6 +185,7 @@ class AgenciesController extends BaseController
         ];
 
         if ($clientAccessModel->save($data)) {
+            $accessId = $clientAccessModel->getInsertID();
             session()->setFlashdata('generated_password', $password);
             return redirect()->to('/admin/agencies/' . $agencyId)->with('success', 'Acesso habilitado com sucesso. Token: ' . $token);
         }
@@ -205,10 +206,13 @@ class AgenciesController extends BaseController
         }
 
         $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'), 0, 12);
-        $clientAccessModel->update($accessId, ['password' => $password]);
 
-        session()->setFlashdata('generated_password', $password);
-        return redirect()->back()->with('success', 'Nova senha gerada com sucesso.');
+        if ($clientAccessModel->update($accessId, ['password' => $password])) {
+            session()->setFlashdata('generated_password', $password);
+            return redirect()->back()->with('success', 'Nova senha gerada com sucesso.');
+        }
+
+        return redirect()->back()->with('error', 'Erro ao gerar senha.');
     }
 
     /**
