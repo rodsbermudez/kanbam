@@ -4,6 +4,16 @@
 // --- HISTÓRICO DE VERSÕES ---
 // Adicione novas versões no topo do array. A primeira é sempre a mais recente.
 $changelog = [
+    '1.3.3' => [
+        'date' => '2026-04-26',
+        'items' => [
+            '<strong>Agências:</strong> Correção na geração de token/senha.',
+            '<strong>Agências:</strong> Botões copiar link/senha funcionando.',
+            '<strong>Agências:</strong> Correção rota select-client (404).',
+            '<strong>Agências:</strong> Layout dados da agência corrigido.',
+            '<strong>Portal:</strong> Troca de cliente via dropdown funcionando.',
+        ]
+    ],
     '1.3.2' => [
         'date' => '2026-04-26',
         'items' => [
