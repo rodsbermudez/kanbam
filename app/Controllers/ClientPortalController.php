@@ -68,7 +68,7 @@ class ClientPortalController extends BaseController
             }
 
             // Se tem vários, mostra lista para escolher
-            return redirect()->to('/portal/agency/select-client');
+            return redirect()->to('/portal/select-client');
         }
 
         // SE É CLIENTE NORMAL
