@@ -50,8 +50,10 @@ class ClientsController extends BaseController
      */
     public function new()
     {
+        $agencyModel = new \App\Models\AgencyModel();
         return view('admin/clients/form', [
-            'title' => 'Novo Cliente'
+            'title'     => 'Novo Cliente',
+            'agencies' => $agencyModel->orderBy('name', 'ASC')->findAll()
         ]);
     }
 
@@ -79,12 +81,14 @@ class ClientsController extends BaseController
         $projectModel = new ProjectModel();
         $taskModel = new TaskModel();
         $clientAccessModel = new ClientAccessModel();
+        $agencyModel = new \App\Models\AgencyModel();
 
         $client = $clientModel->find($id);
 
         if (!$client) {
             return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
         }
+
         $access = $clientAccessModel->where('client_id', $id)->first();
 
         // Separa os projetos em ativos e concluídos
@@ -100,9 +104,15 @@ class ClientsController extends BaseController
             }
         }
 
+        $agency = null;
+        if (!empty($client->agency_id)) {
+            $agency = $agencyModel->find($client->agency_id);
+        }
+
         $data = [
             'title'          => 'Detalhes do Cliente: ' . esc($client->name),
             'client'         => $client,
+            'agency'         => $agency,
             'active_projects'  => $activeProjects,
             'concluded_projects' => $concludedProjects,
             'upcoming_tasks' => $taskModel->getUpcomingTasksForClient($id),
@@ -130,6 +140,7 @@ class ClientsController extends BaseController
     public function edit($id)
     {
         $clientModel = new ClientModel();
+        $agencyModel = new \App\Models\AgencyModel();
         $client = $clientModel->find($id);
 
         if (!$client) {
@@ -137,8 +148,9 @@ class ClientsController extends BaseController
         }
 
         return view('admin/clients/form', [
-            'title'  => 'Editar Cliente: ' . esc($client->name),
-            'client' => $client
+            'title'    => 'Editar Cliente: ' . esc($client->name),
+            'client'   => $client,
+            'agencies' => $agencyModel->orderBy('name', 'ASC')->findAll()
         ]);
     }
 

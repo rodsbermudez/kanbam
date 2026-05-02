@@ -11,6 +11,11 @@
             <p class="text-muted mb-0">
                 Responsável: <?= esc($client->responsible_name) ?> (<?= esc($client->responsible_email) ?>)
             </p>
+            <?php if (!empty($client->agency_id) && !empty($agency)): ?>
+                <p class="text-muted mb-0">
+                    Agência: <a href="<?= site_url('admin/agencies/' . $agency->id) ?>"><?= esc($agency->name) ?></a>
+                </p>
+            <?php endif; ?>
         </div>
         <?php if (session()->get('is_admin')): ?>
             <a href="<?= site_url('admin/clients/' . $client->id . '/edit') ?>" class="btn btn-primary">Editar Cliente</a>

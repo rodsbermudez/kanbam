@@ -18,7 +18,8 @@ class ClientModel extends Model
         'responsible_name',
         'responsible_email',
         'responsible_phone',
-        'color'
+        'color',
+        'agency_id'
     ];
 
     // Dates

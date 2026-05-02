@@ -40,6 +40,16 @@
                     </div>
                 </div>
 
+                <div class="mb-3">
+                    <label for="agency_id" class="form-label">Agência</label>
+                    <select class="form-select" id="agency_id" name="agency_id">
+                        <option value="">Nenhuma</option>
+                        <?php foreach ($agencies ?? [] as $agency): ?>
+                            <option value="<?= $agency->id ?>" <?= (($client->agency_id ?? '') == $agency->id) ? 'selected' : '' ?>><?= esc($agency->name) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <fieldset class="border p-3 my-3 rounded">
                     <legend class="float-none w-auto px-2 h6">Contato do Responsável (Opcional)</legend>
                     <div class="mb-3">
