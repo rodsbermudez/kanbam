@@ -10,14 +10,21 @@ class ClientAccessModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'object';
-    protected $allowedFields    = ['client_id', 'token', 'password', 'last_used_at'];
+    protected $allowedFields    = ['client_id', 'agency_id', 'token', 'password', 'last_used_at'];
+    protected $useTimestamps   = true;
+    protected $createdField    = 'created_at';
+    protected $updatedField    = 'updated_at';
 
-    // Dates
-    protected $useTimestamps = true;
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
+    protected $validationRules = [
+        'id'        => 'permit_empty|is_natural_no_zero',
+        'client_id' => 'permit_empty|is_natural_no_zero',
+        'agency_id' => 'permit_empty|is_natural_no_zero',
+        'token'     => 'required|max_length[64]',
+        'password'  => 'required|max_length[255]',
+    ];
 
-    // Callbacks
+    protected $skipValidation = false;
+
     protected $beforeInsert = ['hashPassword'];
     protected $beforeUpdate = ['hashPassword'];
 

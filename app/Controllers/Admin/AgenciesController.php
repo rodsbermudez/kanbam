@@ -94,17 +94,22 @@ class AgenciesController extends BaseController
         }
 
         $linkedClients = $clientModel->where('agency_id', $id)
-                                   ->orderBy('name', 'ASC')
-                                   ->findAll();
+                                    ->orderBy('name', 'ASC')
+                                    ->findAll();
 
         $availableClients = $clientModel->where('agency_id', null)
-                                     ->orWhere('agency_id', $id)
-                                     ->orderBy('name', 'ASC')
-                                     ->findAll();
+                                      ->orWhere('agency_id', $id)
+                                      ->orderBy('name', 'ASC')
+                                      ->findAll();
+
+        // Buscar access da agência
+        $clientAccessModel = new \App\Models\ClientAccessModel();
+        $access = $clientAccessModel->where('agency_id', $id)->first();
 
         $data = [
             'title'          => 'Agência: ' . esc($agency->name),
             'agency'         => $agency,
+            'access'         => $access,
             'linked_clients' => $linkedClients,
             'available_clients' => $availableClients,
         ];
