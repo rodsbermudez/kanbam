@@ -44,8 +44,8 @@
                         </tr>
                     <?php else: ?>
                         <?php foreach ($agencies as $agency): ?>
-                            <tr>
-                                <td><a href="<?= site_url('admin/agencies/' . $agency->id) ?>"><?= esc($agency->name) ?></a></td>
+                            <tr class="clickable-row" data-href="<?= site_url('admin/agencies/' . $agency->id) ?>">
+                                <td><?= esc($agency->name) ?></td>
                                 <td><?= esc($agency->contact_name ?? '-') ?></td>
                                 <td><?= esc($agency->email ?? '-') ?></td>
                                 <td><?= esc($agency->phone ?? '-') ?></td>

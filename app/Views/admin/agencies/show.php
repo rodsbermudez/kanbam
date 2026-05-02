@@ -45,8 +45,8 @@
                             </thead>
                             <tbody>
                                 <?php foreach ($linked_clients as $client): ?>
-                                    <tr>
-                                        <td><a href="<?= site_url('admin/clients/' . $client->id) ?>"><?= esc($client->name) ?></a></td>
+                                    <tr class="clickable-row" data-href="<?= site_url('admin/clients/' . $client->id) ?>">
+                                        <td><?= esc($client->name) ?></td>
                                         <td><span class="badge" style="background-color: <?= esc($client->color ?? '#6c757d') ?>"><?= esc($client->tag) ?></span></td>
                                         <td>
                                             <a href="<?= site_url('admin/agencies/' . $agency->id . '/unlinkclient/' . $client->id) ?>" 
