@@ -13,8 +13,10 @@ $routes->get('portal/([a-f0-9]{64})', 'ClientPortalController::loginForm/$1');
 $routes->post('portal/([a-f0-9]{64})/login', 'ClientPortalController::attemptLogin/$1');
 $routes->get('portal/logout', 'ClientPortalController::logout');
 $routes->group('portal', ['filter' => 'client_portal_auth'], function ($routes) {
+    $routes->get('select-client', 'ClientPortalController::selectClient');
     $routes->get('dashboard', 'ClientPortalController::dashboard');
     $routes->get('dashboard/(:num)', 'ClientPortalController::dashboard/$1');
+    $routes->get('switch-client/(:num)', 'ClientPortalController::switchClient/$1');
     $routes->get('files/(:num)/download', 'ClientPortalController::downloadFile/$1');
     $routes->get('reports/(:num)', 'ClientPortalController::viewReport/$1');
     $routes->get('reports/list', 'ClientPortalController::listReports');
